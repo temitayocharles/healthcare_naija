@@ -155,6 +155,7 @@ Build-time defaults:
 Runtime overrides:
 
 - Create/update Firestore document: `config/feature_flags`
+- Use `docs/FEATURE_FLAGS_BASELINE.md` for recommended `dev/staging/prod` values
 - Example keys:
   - `ff_chat_enabled`
   - `ff_chat_attachments_enabled`

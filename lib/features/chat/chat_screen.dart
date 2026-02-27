@@ -7,6 +7,7 @@ import '../../core/providers/providers.dart';
 import '../../core/services/media_upload_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../services/firestore_service.dart';
+import '../../widgets/healthcare_hero_banner.dart';
 import '../../widgets/sync_status_action.dart';
 
 final _messagesProvider = StreamProvider.family
@@ -177,16 +178,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       ),
       body: Column(
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-              child: Image.asset(
-                'assets/images/chat_banner.jpg',
-                height: 120,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(12, 12, 12, 0),
+            child: HealthcareHeroBanner(
+              title: 'Care Team Chat',
+              subtitle:
+                  'Securely message caregivers and share essential updates.',
+              icon: Icons.chat_bubble,
+              height: 120,
             ),
           ),
           Padding(
@@ -208,12 +207,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Image.asset(
-                          'assets/images/chat_banner.jpg',
-                          height: 120,
-                          width: 180,
-                          fit: BoxFit.cover,
-                        ),
+                        const Icon(Icons.forum_outlined, size: 72),
                         const SizedBox(height: 12),
                         const Text('No messages yet. Start the conversation.'),
                       ],

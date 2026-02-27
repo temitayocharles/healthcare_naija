@@ -252,6 +252,7 @@ See `docs/` for operational and delivery documentation, including:
 - environment setup
 - v1.1 execution roadmap
 - app store and play store release guide
+- feature flags baseline and rollout policy
 - clinical safety guardrails
 - security baseline
 - testing plan

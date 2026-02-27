@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
+import '../../widgets/healthcare_hero_banner.dart';
 import '../../widgets/sync_status_action.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -26,14 +27,12 @@ class HomeScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Welcome Card
-            ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Image.asset(
-                'assets/images/home_hero.jpg',
-                height: 180,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
+            const HealthcareHeroBanner(
+              title: 'Connected Care Across Nigeria',
+              subtitle:
+                  'Book, track, and share your healthcare journey with confidence.',
+              icon: Icons.health_and_safety,
+              height: 180,
             ),
             const SizedBox(height: 16),
             Container(
@@ -84,9 +83,9 @@ class HomeScreen extends ConsumerWidget {
             // Quick Actions
             Text(
               'Quick Actions',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Row(
@@ -140,7 +139,9 @@ class HomeScreen extends ConsumerWidget {
               decoration: BoxDecoration(
                 color: AppTheme.errorColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppTheme.errorColor.withValues(alpha: 0.3)),
+                border: Border.all(
+                  color: AppTheme.errorColor.withValues(alpha: 0.3),
+                ),
               ),
               child: Row(
                 children: [
@@ -162,10 +163,11 @@ class HomeScreen extends ConsumerWidget {
                       children: [
                         Text(
                           'Emergency?',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.errorColor,
-                          ),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.errorColor,
+                              ),
                         ),
                         Text(
                           'Tap for emergency services',
@@ -211,17 +213,13 @@ class HomeScreen extends ConsumerWidget {
               ),
               child: Column(
                 children: [
-                  Icon(
-                    Icons.calendar_today,
-                    size: 40,
-                    color: Colors.grey[400],
-                  ),
+                  Icon(Icons.calendar_today, size: 40, color: Colors.grey[400]),
                   const SizedBox(height: 8),
                   Text(
                     'No upcoming appointments',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                   ),
                   const SizedBox(height: 8),
                   TextButton(
@@ -258,17 +256,13 @@ class HomeScreen extends ConsumerWidget {
               ),
               child: Column(
                 children: [
-                  Icon(
-                    Icons.history,
-                    size: 40,
-                    color: Colors.grey[400],
-                  ),
+                  Icon(Icons.history, size: 40, color: Colors.grey[400]),
                   const SizedBox(height: 8),
                   Text(
                     'No recent checks',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                   ),
                   const SizedBox(height: 8),
                   TextButton(
@@ -314,9 +308,9 @@ class _QuickActionCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               label,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
               textAlign: TextAlign.center,
             ),
           ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
+import '../../widgets/healthcare_hero_banner.dart';
 import '../../widgets/sync_status_action.dart';
 
 class TelemedicineScreen extends ConsumerWidget {
@@ -11,9 +12,7 @@ class TelemedicineScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Telemedicine'),
-        actions: const [
-          SyncStatusAction(),
-        ],
+        actions: const [SyncStatusAction()],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -21,14 +20,12 @@ class TelemedicineScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Info Card
-            ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Image.asset(
-                'assets/images/home_hero.jpg',
-                height: 160,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
+            const HealthcareHeroBanner(
+              title: 'Virtual Clinical Visits',
+              subtitle:
+                  'Secure remote consultations with verified healthcare providers.',
+              icon: Icons.video_camera_front,
+              height: 160,
             ),
             const SizedBox(height: 16),
             Container(
@@ -64,9 +61,9 @@ class TelemedicineScreen extends ConsumerWidget {
             // How it works
             Text(
               'How It Works',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             _StepCard(
@@ -94,9 +91,9 @@ class TelemedicineScreen extends ConsumerWidget {
             // Features
             Text(
               'Features',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Wrap(
@@ -131,9 +128,9 @@ class TelemedicineScreen extends ConsumerWidget {
             // Recent consultations
             Text(
               'Recent Consultations',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Center(
@@ -143,9 +140,9 @@ class TelemedicineScreen extends ConsumerWidget {
                   const SizedBox(height: 8),
                   Text(
                     'No recent consultations',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                   ),
                 ],
               ),
@@ -192,9 +189,6 @@ class _FeatureChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Chip(
-      avatar: Icon(icon, size: 18),
-      label: Text(label),
-    );
+    return Chip(avatar: Icon(icon, size: 18), label: Text(label));
   }
 }
