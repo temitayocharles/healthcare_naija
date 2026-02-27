@@ -105,6 +105,11 @@ class ProfileScreen extends ConsumerWidget {
               onTap: () {},
             ),
             _MenuItem(
+              icon: Icons.sync,
+              title: 'Sync Diagnostics',
+              onTap: () => context.push('/sync-diagnostics'),
+            ),
+            _MenuItem(
               icon: Icons.privacy_tip_outlined,
               title: 'Privacy & Security',
               onTap: () {},

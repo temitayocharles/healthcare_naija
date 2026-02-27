@@ -1,4 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../datasources/local/appointment_local_datasource.dart';
+import '../datasources/local/health_record_local_datasource.dart';
+import '../datasources/local/provider_local_datasource.dart';
+import '../datasources/local/symptom_record_local_datasource.dart';
+import '../datasources/local/user_local_datasource.dart';
+import '../datasources/remote/appointment_remote_datasource.dart';
+import '../datasources/remote/auth_remote_datasource.dart';
+import '../datasources/remote/health_record_remote_datasource.dart';
+import '../datasources/remote/provider_remote_datasource.dart';
+import '../datasources/remote/symptom_record_remote_datasource.dart';
 import '../repositories/repositories.dart';
 import '../services/services.dart';
 import '../services/provider_service.dart';
@@ -40,16 +51,112 @@ final forceSyncProvider = FutureProvider<void>((ref) async {
   await syncQueue.flushQueue();
 });
 
+final failedSyncOperationsProvider = StreamProvider<int>((ref) {
+  final syncQueue = ref.watch(syncQueueServiceProvider);
+  return syncQueue.failedCountStream;
+});
+
+final lastSuccessfulSyncProvider = StreamProvider<DateTime?>((ref) {
+  final syncQueue = ref.watch(syncQueueServiceProvider);
+  return syncQueue.lastSyncStream;
+});
+
+// Local data sources
+final userLocalDataSourceProvider = Provider<UserLocalDataSource>((ref) {
+  final storage = ref.watch(storageServiceProvider);
+  return UserLocalDataSource(storage);
+});
+
+final providerLocalDataSourceProvider = Provider<ProviderLocalDataSource>((ref) {
+  final storage = ref.watch(storageServiceProvider);
+  return ProviderLocalDataSource(storage);
+});
+
+final appointmentLocalDataSourceProvider = Provider<AppointmentLocalDataSource>((ref) {
+  final storage = ref.watch(storageServiceProvider);
+  return AppointmentLocalDataSource(storage);
+});
+
+final healthRecordLocalDataSourceProvider = Provider<HealthRecordLocalDataSource>((ref) {
+  final storage = ref.watch(storageServiceProvider);
+  return HealthRecordLocalDataSource(storage);
+});
+
+final symptomRecordLocalDataSourceProvider = Provider<SymptomRecordLocalDataSource>((ref) {
+  final storage = ref.watch(storageServiceProvider);
+  return SymptomRecordLocalDataSource(storage);
+});
+
+// Remote data sources
+final authRemoteDataSourceProvider = Provider<AuthRemoteDataSource>((ref) {
+  return AuthRemoteDataSource(FirebaseAuth.instance);
+});
+
+final providerRemoteDataSourceProvider = Provider<ProviderRemoteDataSource>((ref) {
+  return ProviderRemoteDataSource();
+});
+
+final appointmentRemoteDataSourceProvider = Provider<AppointmentRemoteDataSource>((ref) {
+  return AppointmentRemoteDataSource();
+});
+
+final healthRecordRemoteDataSourceProvider = Provider<HealthRecordRemoteDataSource>((ref) {
+  return HealthRecordRemoteDataSource();
+});
+
+final symptomRecordRemoteDataSourceProvider = Provider<SymptomRecordRemoteDataSource>((ref) {
+  return SymptomRecordRemoteDataSource();
+});
+
 // Repositories
 final userRepositoryProvider = Provider<UserRepository>((ref) {
-  final storage = ref.watch(storageServiceProvider);
-  return UserRepositoryImpl(storage);
+  final local = ref.watch(userLocalDataSourceProvider);
+  final connectivity = ref.watch(connectivityServiceProvider);
+  final syncQueue = ref.watch(syncQueueServiceProvider);
+  return UserRepositoryImpl(local, connectivity, syncQueue);
 });
 
 final providerRepositoryProvider = Provider<ProviderRepository>((ref) {
   final providerService = ref.watch(providerServiceProvider);
-  final storage = ref.watch(storageServiceProvider);
-  return ProviderRepositoryImpl(providerService, storage);
+  final local = ref.watch(providerLocalDataSourceProvider);
+  final remote = ref.watch(providerRemoteDataSourceProvider);
+  final connectivity = ref.watch(connectivityServiceProvider);
+  final syncQueue = ref.watch(syncQueueServiceProvider);
+  return ProviderRepositoryImpl(
+    providerService,
+    local,
+    remote,
+    connectivity,
+    syncQueue,
+  );
+});
+
+final authRepositoryProvider = Provider<AuthRepository>((ref) {
+  final remote = ref.watch(authRemoteDataSourceProvider);
+  final userLocal = ref.watch(userLocalDataSourceProvider);
+  return AuthRepositoryImpl(remote, userLocal);
+});
+
+final appointmentRepositoryProvider = Provider<AppointmentRepository>((ref) {
+  final local = ref.watch(appointmentLocalDataSourceProvider);
+  final remote = ref.watch(appointmentRemoteDataSourceProvider);
+  final syncQueue = ref.watch(syncQueueServiceProvider);
+  final connectivity = ref.watch(connectivityServiceProvider);
+  return AppointmentRepositoryImpl(local, remote, syncQueue, connectivity);
+});
+
+final healthRecordRepositoryProvider = Provider<HealthRecordRepository>((ref) {
+  final local = ref.watch(healthRecordLocalDataSourceProvider);
+  final remote = ref.watch(healthRecordRemoteDataSourceProvider);
+  final connectivity = ref.watch(connectivityServiceProvider);
+  return HealthRecordRepositoryImpl(local, remote, connectivity);
+});
+
+final symptomRepositoryProvider = Provider<SymptomRepository>((ref) {
+  final local = ref.watch(symptomRecordLocalDataSourceProvider);
+  final remote = ref.watch(symptomRecordRemoteDataSourceProvider);
+  final connectivity = ref.watch(connectivityServiceProvider);
+  return SymptomRepositoryImpl(local, remote, connectivity);
 });
 
 // Connectivity state
@@ -83,8 +190,7 @@ class UserNotifier extends StateNotifier<models.User?> {
 
   Future<void> setUser(models.User user) async {
     final userRepository = ref.read(userRepositoryProvider);
-    await userRepository.saveCurrentUser(user);
-    await ref.read(syncQueueServiceProvider).enqueueUpsertUser(user);
+    await userRepository.upsertUser(user);
     state = user;
   }
 
@@ -117,17 +223,15 @@ class ProvidersNotifier extends StateNotifier<List<models.HealthcareProvider>> {
   }
 
   Future<void> addProvider(models.HealthcareProvider provider) async {
-    state = [...state, provider];
     final providerRepository = ref.read(providerRepositoryProvider);
-    await providerRepository.cacheProviders(state);
-    await ref.read(syncQueueServiceProvider).enqueueUpsertProvider(provider);
+    await providerRepository.upsertProvider(provider);
+    state = [...state, provider];
   }
 
   Future<void> updateProvider(models.HealthcareProvider provider) async {
-    state = state.map((p) => p.id == provider.id ? provider : p).toList();
     final providerRepository = ref.read(providerRepositoryProvider);
-    await providerRepository.cacheProviders(state);
-    await ref.read(syncQueueServiceProvider).enqueueUpsertProvider(provider);
+    await providerRepository.upsertProvider(provider);
+    state = state.map((p) => p.id == provider.id ? provider : p).toList();
   }
 }
 

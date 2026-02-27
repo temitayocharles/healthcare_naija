@@ -35,17 +35,14 @@ class AppointmentService {
     );
 
     // Store locally
-    final storage = ref.read(storageServiceProvider);
-    final existing = storage.getCachedAppointments();
-    await storage.cacheAppointments([...existing, appointment]);
-    await ref.read(syncQueueServiceProvider).enqueueUpsertAppointment(appointment);
+    await ref.read(appointmentRepositoryProvider).upsert(appointment);
 
     return appointment;
   }
 
   // Get user appointments
   List<Appointment> getAppointments(String userId) {
-    return ref.read(storageServiceProvider).getCachedAppointments()
+    return ref.read(appointmentLocalDataSourceProvider).getAll()
         .where((a) => a.patientId == userId)
         .toList()
       ..sort((a, b) => a.dateTime.compareTo(b.dateTime));
@@ -76,8 +73,7 @@ class AppointmentService {
 
   // Cancel appointment
   Future<Appointment?> cancelAppointment(String appointmentId) async {
-    final storage = ref.read(storageServiceProvider);
-    final appointments = storage.getCachedAppointments();
+    final appointments = ref.read(appointmentLocalDataSourceProvider).getAll();
 
     final index = appointments.indexWhere((a) => a.id == appointmentId);
     if (index == -1) return null;
@@ -85,8 +81,7 @@ class AppointmentService {
     final updated = appointments[index].copyWith(status: 'cancelled');
     appointments[index] = updated;
 
-    await storage.cacheAppointments(appointments);
-    await ref.read(syncQueueServiceProvider).enqueueUpsertAppointment(updated);
+    await ref.read(appointmentRepositoryProvider).upsert(updated);
     return updated;
   }
 
@@ -95,8 +90,7 @@ class AppointmentService {
     String appointmentId,
     DateTime newDateTime,
   ) async {
-    final storage = ref.read(storageServiceProvider);
-    final appointments = storage.getCachedAppointments();
+    final appointments = ref.read(appointmentLocalDataSourceProvider).getAll();
 
     final index = appointments.indexWhere((a) => a.id == appointmentId);
     if (index == -1) return null;
@@ -107,19 +101,13 @@ class AppointmentService {
     );
     appointments[index] = updated;
 
-    await storage.cacheAppointments(appointments);
-    await ref.read(syncQueueServiceProvider).enqueueUpsertAppointment(updated);
+    await ref.read(appointmentRepositoryProvider).upsert(updated);
     return updated;
   }
 
   // Get appointment by ID
   Appointment? getAppointmentById(String id) {
-    try {
-      return ref.read(storageServiceProvider).getCachedAppointments()
-          .firstWhere((a) => a.id == id);
-    } catch (e) {
-      return null;
-    }
+    return ref.read(appointmentLocalDataSourceProvider).getById(id);
   }
 }
 

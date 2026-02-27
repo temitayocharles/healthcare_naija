@@ -16,7 +16,7 @@ void main() async {
       overrides: [
         storageServiceProvider.overrideWithValue(storageService),
       ],
-      child: NigeriaHealthCareApp(),
+      child: const NigeriaHealthCareApp(),
     ),
   );
 }

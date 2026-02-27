@@ -1,0 +1,40 @@
+name: Deploy Production
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy-production:
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+      - name: Build web production artifact
+        run: flutter build web --release
+      - name: Deploy to Firebase Production
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          FIREBASE_PROJECT_ID_PRODUCTION: ${{ secrets.FIREBASE_PROJECT_ID_PRODUCTION }}
+        run: |
+          if [ -z "${FIREBASE_TOKEN}" ] || [ -z "${FIREBASE_PROJECT_ID_PRODUCTION}" ]; then
+            echo "Missing FIREBASE_TOKEN or FIREBASE_PROJECT_ID_PRODUCTION secret."
+            exit 1
+          fi
+          firebase deploy \
+            --project "${FIREBASE_PROJECT_ID_PRODUCTION}" \
+            --only "hosting,firestore:rules,firestore:indexes" \
+            --token "${FIREBASE_TOKEN}" \
+            --non-interactive

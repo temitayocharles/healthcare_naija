@@ -1,0 +1,15 @@
+import 'dart:io';
+
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  test('firestore.rules contains required collection guards', () {
+    final rules = File('firestore.rules').readAsStringSync();
+    expect(rules.contains('match /users/{userId}'), isTrue);
+    expect(rules.contains('match /providers/{providerId}'), isTrue);
+    expect(rules.contains('match /appointments/{appointmentId}'), isTrue);
+    expect(rules.contains('match /health_records/{recordId}'), isTrue);
+    expect(rules.contains('match /symptom_records/{recordId}'), isTrue);
+    expect(rules.contains('function signedIn()'), isTrue);
+  });
+}

@@ -76,6 +76,14 @@ class StorageService {
     return _appointmentsBox.values.toList();
   }
 
+  Future<void> cacheAppointment(Appointment appointment) async {
+    await _appointmentsBox.put(appointment.id, appointment);
+  }
+
+  Appointment? getCachedAppointmentById(String id) {
+    return _appointmentsBox.get(id);
+  }
+
   // Symptom methods
   Future<void> cacheSymptoms(List<SymptomRecord> symptoms) async {
     await _symptomsBox.clear();
@@ -88,6 +96,10 @@ class StorageService {
     return _symptomsBox.values.toList();
   }
 
+  Future<void> cacheSymptomRecord(SymptomRecord symptom) async {
+    await _symptomsBox.put(symptom.id, symptom);
+  }
+
   // Health Records methods
   Future<void> cacheHealthRecords(List<HealthRecord> records) async {
     await _healthRecordsBox.clear();
@@ -98,6 +110,10 @@ class StorageService {
 
   List<HealthRecord> getCachedHealthRecords() {
     return _healthRecordsBox.values.toList();
+  }
+
+  Future<void> cacheHealthRecord(HealthRecord record) async {
+    await _healthRecordsBox.put(record.id, record);
   }
 
   // Settings methods

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../result/app_result.dart';
 import '../../models/user.dart';
 import '../providers/providers.dart';
 
@@ -21,7 +22,7 @@ class AuthService {
       );
 
       // Cache the user locally
-      await ref.read(storageServiceProvider).cacheUser(user);
+      await ref.read(userRepositoryProvider).upsertUser(user);
       return user;
     } catch (e) {
       throw Exception('Phone authentication failed: $e');
@@ -30,22 +31,13 @@ class AuthService {
 
   // Email authentication
   Future<User?> signInWithEmail(String email, String password) async {
-    try {
-      // For demo, create mock user
-      final user = User(
-        id: 'user_${DateTime.now().millisecondsSinceEpoch}',
-        email: email,
-        phone: '',
-        name: email.split('@').first,
-        role: 'patient',
-        createdAt: DateTime.now(),
-      );
-
-      await ref.read(storageServiceProvider).cacheUser(user);
-      return user;
-    } catch (e) {
-      throw Exception('Email authentication failed: $e');
+    final result = await ref
+        .read(authRepositoryProvider)
+        .signInWithEmail(email: email, password: password);
+    if (result is AppSuccess<User>) {
+      return result.data;
     }
+    return null;
   }
 
   // Register new user
@@ -65,7 +57,7 @@ class AuthService {
         createdAt: DateTime.now(),
       );
 
-      await ref.read(storageServiceProvider).cacheUser(user);
+      await ref.read(userRepositoryProvider).upsertUser(user);
       return user;
     } catch (e) {
       throw Exception('Registration failed: $e');
@@ -74,12 +66,12 @@ class AuthService {
 
   // Sign out
   Future<void> signOut() async {
-    await ref.read(storageServiceProvider).clearUser();
+    await ref.read(authRepositoryProvider).signOut();
   }
 
   // Get current user
   User? getCurrentUser() {
-    return ref.read(storageServiceProvider).getCachedUser();
+    return ref.read(userRepositoryProvider).getCurrentUser();
   }
 
   // Update user profile
@@ -99,7 +91,7 @@ class AuthService {
       address: address ?? currentUser.address,
     );
 
-    await ref.read(storageServiceProvider).cacheUser(updatedUser);
+    await ref.read(userRepositoryProvider).upsertUser(updatedUser);
     return updatedUser;
   }
 

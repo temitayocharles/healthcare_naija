@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "default": "nigeria-health-care",
+    "staging": "nigeria-health-care-staging",
+    "production": "nigeria-health-care"
+  }
+}

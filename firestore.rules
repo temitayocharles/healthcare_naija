@@ -1,0 +1,72 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function role() {
+      return signedIn() ? request.auth.token.role : null;
+    }
+
+    function isProvider() {
+      return role() == "provider" || role() == "admin";
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if false;
+    }
+
+    match /providers/{providerId} {
+      allow read: if true;
+      allow create, update: if isProvider();
+      allow delete: if role() == "admin";
+    }
+
+    match /appointments/{appointmentId} {
+      allow read: if signedIn() &&
+        (resource.data.patientId == request.auth.uid ||
+         resource.data.providerId == request.auth.uid ||
+         role() == "admin");
+
+      allow create: if signedIn() &&
+        request.resource.data.patientId == request.auth.uid;
+
+      allow update: if signedIn() &&
+        (resource.data.patientId == request.auth.uid ||
+         resource.data.providerId == request.auth.uid ||
+         role() == "admin");
+
+      allow delete: if false;
+    }
+
+    match /health_records/{recordId} {
+      allow read: if signedIn() &&
+        (resource.data.userId == request.auth.uid ||
+         role() == "admin");
+      allow create: if signedIn() &&
+        request.resource.data.userId == request.auth.uid;
+      allow update: if signedIn() &&
+        (resource.data.userId == request.auth.uid || role() == "admin");
+      allow delete: if false;
+    }
+
+    match /symptom_records/{recordId} {
+      allow read: if signedIn() &&
+        (resource.data.userId == request.auth.uid ||
+         role() == "admin");
+      allow create: if signedIn() &&
+        request.resource.data.userId == request.auth.uid;
+      allow update: if signedIn() &&
+        (resource.data.userId == request.auth.uid || role() == "admin");
+      allow delete: if false;
+    }
+  }
+}
