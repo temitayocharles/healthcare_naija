@@ -30,4 +30,4 @@ jobs:
         run: flutter test test/smoke_integration_like_test.dart
 
       - name: Run integration test placeholder
-        run: flutter test integration_test/smoke_test.dart -d linux
+        run: flutter test integration_test/smoke_test.dart --platform vm

@@ -31,11 +31,19 @@ test('users: owner can write own profile', async () => {
   await assertSucceeds(
     db.collection('users').doc('user_a').set({
       id: 'user_a',
+      email: null,
       phone: '08012345678',
       name: 'User A',
       role: 'patient',
+      profileImageUrl: null,
+      state: null,
+      lga: null,
+      address: null,
+      latitude: null,
+      longitude: null,
       createdAt: new Date().toISOString(),
       isVerified: false,
+      medicalHistory: null,
     }),
   );
 });
@@ -45,11 +53,19 @@ test('users: non-owner cannot write another user profile', async () => {
   await assertFails(
     db.collection('users').doc('user_b').set({
       id: 'user_b',
+      email: null,
       phone: '08012345678',
       name: 'User B',
       role: 'patient',
+      profileImageUrl: null,
+      state: null,
+      lga: null,
+      address: null,
+      latitude: null,
+      longitude: null,
       createdAt: new Date().toISOString(),
       isVerified: false,
+      medicalHistory: null,
     }),
   );
 });
@@ -65,7 +81,11 @@ test('appointments: patient can create own appointment', async () => {
       providerType: 'Physician',
       dateTime: new Date().toISOString(),
       status: 'pending',
+      notes: null,
+      symptoms: null,
       createdAt: new Date().toISOString(),
+      isEmergency: false,
+      appointmentType: 'in_person',
     }),
   );
 });
@@ -81,7 +101,11 @@ test('appointments: patient cannot create for another patient', async () => {
       providerType: 'Physician',
       dateTime: new Date().toISOString(),
       status: 'pending',
+      notes: null,
+      symptoms: null,
       createdAt: new Date().toISOString(),
+      isEmergency: false,
+      appointmentType: 'in_person',
     }),
   );
 });
@@ -119,7 +143,7 @@ test('conversations: participant can create conversation and message', async () 
   await assertSucceeds(
     db.collection('conversations').doc('c1').set({
       participants: ['patient_1', 'caregiver_1'],
-      lastMessage: 'hi',
+      lastMessage: null,
       lastMessageAt: new Date().toISOString(),
     }),
   );
@@ -130,6 +154,10 @@ test('conversations: participant can create conversation and message', async () 
       senderId: 'patient_1',
       receiverId: 'caregiver_1',
       text: 'hello',
+      attachmentUrl: null,
+      attachmentName: null,
+      attachmentType: null,
+      sharedRecordId: null,
       createdAt: new Date().toISOString(),
     }),
   );
@@ -142,6 +170,7 @@ test('conversations: outsider cannot read messages', async () => {
   await assertSucceeds(
     participantDb.collection('conversations').doc('c2').set({
       participants: ['patient_1', 'caregiver_1'],
+      lastMessage: null,
       lastMessageAt: new Date().toISOString(),
     }),
   );
@@ -151,6 +180,10 @@ test('conversations: outsider cannot read messages', async () => {
       senderId: 'patient_1',
       receiverId: 'caregiver_1',
       text: 'private',
+      attachmentUrl: null,
+      attachmentName: null,
+      attachmentType: null,
+      sharedRecordId: null,
       createdAt: new Date().toISOString(),
     }),
   );
