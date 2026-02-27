@@ -29,7 +29,10 @@ class FirestoreService {
   }
 
   static Future<void> createHealthRecord(HealthRecord healthRecord) async {
-    await _firestore.collection('health_records').add(healthRecord.toJson());
+    await _firestore.collection('health_records').doc(healthRecord.id).set(
+          healthRecord.toJson(),
+          SetOptions(merge: true),
+        );
   }
 
   // Providers
@@ -61,7 +64,10 @@ class FirestoreService {
   }
 
   static Future<void> createSymptomRecord(SymptomRecord symptomRecord) async {
-    await _firestore.collection('symptom_records').add(symptomRecord.toJson());
+    await _firestore.collection('symptom_records').doc(symptomRecord.id).set(
+          symptomRecord.toJson(),
+          SetOptions(merge: true),
+        );
   }
 
   // Appointments
@@ -72,5 +78,80 @@ class FirestoreService {
 
   static Future<void> upsertAppointment(Appointment appointment) async {
     await _firestore.collection('appointments').doc(appointment.id).set(appointment.toJson(), SetOptions(merge: true));
+  }
+
+  static Future<void> shareHealthRecordWithCaregiver({
+    required String recordId,
+    required String patientId,
+    required String caregiverId,
+    required String fileUrl,
+    required String title,
+  }) async {
+    final shareId = '${recordId}_$caregiverId';
+    await _firestore.collection('health_record_shares').doc(shareId).set(
+      <String, dynamic>{
+        'recordId': recordId,
+        'patientId': patientId,
+        'caregiverId': caregiverId,
+        'fileUrl': fileUrl,
+        'title': title,
+        'sharedAt': DateTime.now().toIso8601String(),
+      },
+      SetOptions(merge: true),
+    );
+  }
+
+  static String conversationIdFor(String a, String b) {
+    final ids = [a, b]..sort();
+    return '${ids[0]}_${ids[1]}';
+  }
+
+  static Stream<List<Map<String, dynamic>>> watchConversationMessages({
+    required String currentUserId,
+    required String otherUserId,
+  }) {
+    final conversationId = conversationIdFor(currentUserId, otherUserId);
+    return _firestore
+        .collection('conversations')
+        .doc(conversationId)
+        .collection('messages')
+        .orderBy('createdAt', descending: false)
+        .snapshots()
+        .map((snapshots) => snapshots.docs.map((d) => d.data()).toList());
+  }
+
+  static Future<void> sendConversationMessage({
+    required String senderId,
+    required String receiverId,
+    String? text,
+    String? attachmentUrl,
+    String? attachmentName,
+    String? attachmentType,
+    String? sharedRecordId,
+  }) async {
+    final conversationId = conversationIdFor(senderId, receiverId);
+    final now = DateTime.now().toIso8601String();
+    await _firestore.collection('conversations').doc(conversationId).set({
+      'participants': [senderId, receiverId],
+      'lastMessage': text ?? attachmentName ?? 'Attachment',
+      'lastMessageAt': now,
+    }, SetOptions(merge: true));
+
+    final messageRef = _firestore
+        .collection('conversations')
+        .doc(conversationId)
+        .collection('messages')
+        .doc();
+    await messageRef.set({
+      'id': messageRef.id,
+      'senderId': senderId,
+      'receiverId': receiverId,
+      'text': text,
+      'attachmentUrl': attachmentUrl,
+      'attachmentName': attachmentName,
+      'attachmentType': attachmentType,
+      'sharedRecordId': sharedRecordId,
+      'createdAt': now,
+    });
   }
 }

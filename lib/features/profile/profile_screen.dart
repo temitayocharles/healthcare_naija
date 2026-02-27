@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/providers/providers.dart';
 import '../../core/theme/app_theme.dart';
 import '../../widgets/sync_status_action.dart';
 
@@ -9,6 +10,9 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(currentUserProvider);
+    final isGuest = user == null || user.id.startsWith('guest_');
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
@@ -47,21 +51,30 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Guest User',
+                    user?.name ?? 'Guest User',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
-                    'patient',
+                    user?.role ?? 'patient',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Colors.grey[600],
                     ),
                   ),
                   const SizedBox(height: 16),
                   OutlinedButton(
-                    onPressed: () => context.go('/login'),
-                    child: const Text('Sign In / Register'),
+                    onPressed: () async {
+                      if (isGuest) {
+                        context.go('/login');
+                        return;
+                      }
+                      await ref.read(currentUserProvider.notifier).clearUser();
+                      if (context.mounted) {
+                        context.go('/login');
+                      }
+                    },
+                    child: Text(isGuest ? 'Sign In / Register' : 'Sign Out'),
                   ),
                 ],
               ),
@@ -98,6 +111,11 @@ class ProfileScreen extends ConsumerWidget {
               icon: Icons.folder,
               title: 'Health Records',
               onTap: () => context.push('/records'),
+            ),
+            _MenuItem(
+              icon: Icons.chat_bubble_outline,
+              title: 'Chat with Caregiver',
+              onTap: () => context.push('/chat'),
             ),
             _MenuItem(
               icon: Icons.notifications_outlined,

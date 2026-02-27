@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../core/theme/app_theme.dart';
+
 import '../../core/constants/app_constants.dart';
+import '../../core/providers/providers.dart';
+import '../../core/result/app_result.dart';
+import '../../core/theme/app_theme.dart';
+import '../../models/user.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -16,6 +20,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _phoneController = TextEditingController();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
   bool _isLogin = true;
   bool _isLoading = false;
   String _selectedRole = AppConstants.rolePatient;
@@ -25,21 +31,81 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     _phoneController.dispose();
     _nameController.dispose();
     _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
     setState(() => _isLoading = true);
 
-    // Simulate authentication (replace with actual Firebase auth later)
-    await Future.delayed(const Duration(seconds: 1));
+    try {
+      if (_isLogin) {
+        final result = await ref.read(authRepositoryProvider).signInWithEmail(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        );
 
+        if (result is AppSuccess<User>) {
+          await ref.read(currentUserProvider.notifier).setUser(result.data);
+          if (mounted) {
+            context.go('/');
+          }
+        } else if (result is AppFailure<User>) {
+          _showError(result.message);
+        }
+      } else {
+        final result = await ref.read(authRepositoryProvider).registerWithEmail(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+          name: _nameController.text.trim(),
+          phone: _phoneController.text.trim(),
+        );
+
+        if (result is AppSuccess<User>) {
+          final user = result.data.copyWith(role: _selectedRole);
+          await ref.read(currentUserProvider.notifier).setUser(user);
+          if (mounted) {
+            context.go('/');
+          }
+        } else if (result is AppFailure<User>) {
+          _showError(result.message);
+        }
+      }
+    } catch (error) {
+      _showError('Authentication failed: $error');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _continueAsGuest() async {
+    final guest = User(
+      id: 'guest_${DateTime.now().millisecondsSinceEpoch}',
+      phone: 'guest',
+      name: 'Guest User',
+      role: AppConstants.rolePatient,
+      createdAt: DateTime.now(),
+      isVerified: false,
+    );
+    await ref.read(currentUserProvider.notifier).setUser(guest);
     if (mounted) {
-      // Navigate to home
       context.go('/');
     }
+  }
+
+  void _showError(String message) {
+    if (!mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   @override
@@ -54,7 +120,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 40),
-                // Logo and Title
                 Icon(
                   Icons.local_hospital,
                   size: 80,
@@ -65,21 +130,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   'Nigeria Health Care',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.primaryColor,
-                  ),
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primaryColor,
+                      ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Your health, our priority',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Colors.grey[600],
-                  ),
+                        color: Colors.grey[600],
+                      ),
                 ),
                 const SizedBox(height: 48),
-
-                // Toggle Login/Register
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.grey[200],
@@ -132,8 +195,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-
-                // Name field (for registration)
                 if (!_isLogin) ...[
                   TextFormField(
                     controller: _nameController,
@@ -142,49 +203,74 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       prefixIcon: Icon(Icons.person_outline),
                     ),
                     validator: (value) {
-                      if (!_isLogin && (value == null || value.isEmpty)) {
+                      if (!_isLogin && (value == null || value.trim().isEmpty)) {
                         return 'Please enter your name';
                       }
                       return null;
                     },
                   ),
                   const SizedBox(height: 16),
-
-                  // Email field (for registration)
-                  TextFormField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(
-                      labelText: 'Email (Optional)',
-                      prefixIcon: Icon(Icons.email_outlined),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
                 ],
-
-                // Phone field
                 TextFormField(
-                  controller: _phoneController,
-                  keyboardType: TextInputType.phone,
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
                   decoration: const InputDecoration(
-                    labelText: 'Phone Number',
-                    prefixIcon: Icon(Icons.phone_outlined),
-                    hintText: 'e.g., 08012345678',
+                    labelText: 'Email',
+                    prefixIcon: Icon(Icons.email_outlined),
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your phone number';
+                    final v = value?.trim() ?? '';
+                    if (v.isEmpty) {
+                      return 'Please enter your email';
                     }
-                    if (value.length < 11) {
-                      return 'Please enter a valid Nigerian phone number';
+                    if (!v.contains('@')) {
+                      return 'Please enter a valid email';
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 16),
-
-                // Role selector (for registration)
+                TextFormField(
+                  controller: _passwordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Password',
+                    prefixIcon: Icon(Icons.lock_outline),
+                  ),
+                  validator: (value) {
+                    final v = value ?? '';
+                    if (v.isEmpty) {
+                      return 'Please enter your password';
+                    }
+                    if (!_isLogin && v.length < 6) {
+                      return 'Password must be at least 6 characters';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
                 if (!_isLogin) ...[
+                  TextFormField(
+                    controller: _phoneController,
+                    keyboardType: TextInputType.phone,
+                    decoration: const InputDecoration(
+                      labelText: 'Phone Number',
+                      prefixIcon: Icon(Icons.phone_outlined),
+                      hintText: 'e.g., 08012345678',
+                    ),
+                    validator: (value) {
+                      if (!_isLogin) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter your phone number';
+                        }
+                        if (value.trim().length < 11) {
+                          return 'Please enter a valid Nigerian phone number';
+                        }
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
                   Text(
                     'I am a:',
                     style: Theme.of(context).textTheme.bodyMedium,
@@ -221,8 +307,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   const SizedBox(height: 24),
                 ],
-
-                // Submit button
                 ElevatedButton(
                   onPressed: _isLoading ? null : _submit,
                   child: _isLoading
@@ -237,10 +321,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       : Text(_isLogin ? 'Login' : 'Create Account'),
                 ),
                 const SizedBox(height: 16),
-
-                // Skip for demo
                 TextButton(
-                  onPressed: () => context.go('/'),
+                  onPressed: _continueAsGuest,
                   child: const Text('Continue as Guest'),
                 ),
               ],
@@ -267,7 +349,7 @@ class _RoleChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isSelected = value == selected;
+    final isSelected = selected == value;
     return FilterChip(
       label: Text(label),
       selected: isSelected,

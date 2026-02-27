@@ -1,6 +1,4 @@
-// Firebase configuration for Nigeria Health Care App
-// Replace the placeholder values with your actual Firebase project credentials
-
+import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart' as firebase_core;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -8,26 +6,52 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 class FirebaseConfig {
-  static const String androidApiKey = "YOUR_ANDROID_API_KEY";
-  static const String iosApiKey = "YOUR_IOS_API_KEY";
-  static const String appId = "1:123456789:android:abcdef123456";
-  static const String messagingSenderId = "123456789";
-  static const String projectId = "nigeria-health-care";
-  static const String storageBucket = "nigeria-health-care.appspot.com";
+  static const String apiKey = String.fromEnvironment('FIREBASE_API_KEY');
+  static const String appId = String.fromEnvironment('FIREBASE_APP_ID');
+  static const String messagingSenderId = String.fromEnvironment('FIREBASE_MESSAGING_SENDER_ID');
+  static const String projectId = String.fromEnvironment('FIREBASE_PROJECT_ID');
+  static const String storageBucket = String.fromEnvironment('FIREBASE_STORAGE_BUCKET');
+  static const String iosBundleId = String.fromEnvironment('FIREBASE_IOS_BUNDLE_ID');
 
-  static Future<void> initialize() async {
-    await firebase_core.Firebase.initializeApp(
-      options: const firebase_core.FirebaseOptions(
-        apiKey: androidApiKey,
-        appId: appId,
-        messagingSenderId: messagingSenderId,
-        projectId: projectId,
-        storageBucket: storageBucket,
-      ),
-    );
+  static bool get hasWebOptions =>
+      apiKey.isNotEmpty &&
+      appId.isNotEmpty &&
+      messagingSenderId.isNotEmpty &&
+      projectId.isNotEmpty &&
+      storageBucket.isNotEmpty;
 
-    // Set messaging background handler
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  static Future<bool> initialize() async {
+    if (firebase_core.Firebase.apps.isNotEmpty) {
+      return true;
+    }
+
+    try {
+      if (kIsWeb) {
+        if (!hasWebOptions) {
+          debugPrint(
+            'Firebase not initialized on web: missing dart-define Firebase options.',
+          );
+          return false;
+        }
+        await firebase_core.Firebase.initializeApp(
+          options: const firebase_core.FirebaseOptions(
+            apiKey: apiKey,
+            appId: appId,
+            messagingSenderId: messagingSenderId,
+            projectId: projectId,
+            storageBucket: storageBucket,
+          ),
+        );
+      } else {
+        await firebase_core.Firebase.initializeApp();
+      }
+
+      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+      return true;
+    } catch (error) {
+      debugPrint('Firebase initialization skipped/failed: $error');
+      return false;
+    }
   }
 
   static Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/utils/nigeria_utils.dart';
+import '../../core/providers/providers.dart';
+import '../../core/services/appointment_service.dart';
 import '../../models/provider.dart' as model;
 
 class BookingScreen extends ConsumerStatefulWidget {
@@ -59,19 +60,53 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
       return;
     }
 
+    final currentUser = ref.read(currentUserProvider);
+    if (currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please sign in to book an appointment')),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
-    // Simulate booking
-    await Future.delayed(const Duration(seconds: 1));
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Appointment booked successfully!'),
-          backgroundColor: AppTheme.successColor,
-        ),
+    try {
+      final scheduledDateTime = DateTime(
+        _selectedDate!.year,
+        _selectedDate!.month,
+        _selectedDate!.day,
+        _selectedTime!.hour,
+        _selectedTime!.minute,
       );
-      Navigator.pop(context);
+      await ref.read(appointmentServiceProvider).bookAppointment(
+            patientId: currentUser.id,
+            provider: widget.provider,
+            dateTime: scheduledDateTime,
+            notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+            isEmergency: _isEmergency,
+            appointmentType: _appointmentType ?? 'in_person',
+          );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Appointment booked successfully!'),
+            backgroundColor: AppTheme.successColor,
+          ),
+        );
+        Navigator.pop(context);
+      }
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to book appointment: $error')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -273,7 +308,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                   children: [
                     const Text('Consultation Fee:'),
                     Text(
-                      NigeriaUtils.formatPrice(widget.provider.priceMin!),
+                      '₦${widget.provider.priceMin!.toStringAsFixed(0)}',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18,

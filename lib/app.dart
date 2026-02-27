@@ -8,11 +8,14 @@ import 'features/auth/login_screen.dart';
 import 'features/symptom_checker/symptom_checker_screen.dart';
 import 'features/provider_search/provider_search_screen.dart';
 import 'features/appointments/appointments_screen.dart';
+import 'features/appointments/booking_screen.dart';
 import 'features/profile/profile_screen.dart';
 import 'features/profile/sync_diagnostics_screen.dart';
+import 'features/chat/chat_screen.dart';
 import 'features/emergency/emergency_screen.dart';
 import 'features/telemedicine/telemedicine_screen.dart';
 import 'features/health_records/health_records_screen.dart';
+import 'models/provider.dart' as model;
 import 'widgets/main_scaffold.dart';
 
 class NigeriaHealthCareApp extends ConsumerStatefulWidget {
@@ -69,12 +72,28 @@ class _NigeriaHealthCareAppState extends ConsumerState<NigeriaHealthCareApp>
               builder: (context, state) => const AppointmentsScreen(),
             ),
             GoRoute(
+              path: '/booking',
+              builder: (context, state) {
+                final provider = state.extra as model.HealthcareProvider?;
+                if (provider == null) {
+                  return const AppointmentsScreen();
+                }
+                return BookingScreen(provider: provider);
+              },
+            ),
+            GoRoute(
               path: '/profile',
               builder: (context, state) => const ProfileScreen(),
             ),
             GoRoute(
               path: '/sync-diagnostics',
               builder: (context, state) => const SyncDiagnosticsScreen(),
+            ),
+            GoRoute(
+              path: '/chat',
+              builder: (context, state) => ChatScreen(
+                initialCaregiverId: state.uri.queryParameters['caregiverId'],
+              ),
             ),
             GoRoute(
               path: '/emergency',

@@ -32,6 +32,10 @@ final locationServiceProvider = Provider<LocationService>((ref) {
   return LocationService();
 });
 
+final mediaUploadServiceProvider = Provider<MediaUploadService>((ref) {
+  return MediaUploadService();
+});
+
 final syncQueueServiceProvider = Provider<SyncQueueService>((ref) {
   final storage = ref.watch(storageServiceProvider);
   final connectivity = ref.watch(connectivityServiceProvider);

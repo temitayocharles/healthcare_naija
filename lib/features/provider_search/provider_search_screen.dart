@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/providers/providers.dart';
@@ -327,7 +328,7 @@ class _ProviderSearchScreenState extends ConsumerState<ProviderSearchScreen> {
                     child: ElevatedButton.icon(
                       onPressed: () {
                         Navigator.pop(context);
-                        // Navigate to booking
+                        context.push('/booking', extra: provider);
                       },
                       icon: const Icon(Icons.calendar_today),
                       label: const Text('Book'),
