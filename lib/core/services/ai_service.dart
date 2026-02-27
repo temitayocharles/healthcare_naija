@@ -1,155 +1,252 @@
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 
+import '../constants/app_constants.dart';
+
 class AIService {
-  // For external AI API (OpenAI/Anthropic) - configure with your API key
-  static const String? _openAiApiKey = null; // Set your API key here
+  static const String? _openAiApiKey = null;
   static const String _baseUrl = 'https://api.openai.com/v1';
 
-  // Local symptom database for offline mode
+  static const String safetyDisclaimer =
+      'This tool provides triage guidance only and is not a medical diagnosis. '
+      'If symptoms are severe, worsening, or you feel unsafe, seek immediate in-person care.';
+
+  static const int _maxSymptomsPerRequest = 12;
+
+  static const Set<String> _redFlagSymptoms = {
+    'chest pain',
+    'difficulty breathing',
+    'shortness of breath',
+    'fainting',
+    'unconscious',
+    'unresponsiveness',
+    'severe bleeding',
+    'stroke symptoms',
+    'seizure',
+    'suicidal thoughts',
+  };
+
   static final Map<String, Map<String, dynamic>> _symptomDatabase = {
     'headache': {
       'conditions': ['Migraine', 'Tension Headache', 'Sinusitis', 'Dehydration'],
       'severity': 'normal',
-      'recommendation': 'Rest, hydration, over-the-counter pain reliever. See a doctor if persists >3 days.',
+      'recommendation': 'Hydrate and rest. Seek clinical care if symptoms persist or worsen.',
     },
     'fever': {
       'conditions': ['Viral Infection', 'Bacterial Infection', 'Malaria', 'Flu'],
       'severity': 'urgent',
-      'recommendation': 'Monitor temperature, take paracetamol. Seek medical attention if >39°C or persists >2 days.',
+      'recommendation':
+          'Monitor temperature and seek clinical review if high fever persists.',
     },
     'cough': {
-      'conditions': ['Common Cold', 'Flu', 'Bronchitis', 'Pneumonia', 'COVID-19'],
+      'conditions': ['Common Cold', 'Flu', 'Bronchitis', 'Pneumonia'],
       'severity': 'normal',
-      'recommendation': 'Stay hydrated, rest. See doctor if cough persists >2 weeks or with blood.',
+      'recommendation':
+          'Hydrate and monitor. Seek care for breathing issues, blood, or prolonged symptoms.',
     },
     'stomach pain': {
       'conditions': ['Indigestion', 'Food Poisoning', 'Gastritis', 'Appendicitis'],
       'severity': 'urgent',
-      'recommendation': 'Rest, light meals. Seek immediate care if severe or with vomiting blood.',
+      'recommendation': 'Seek urgent care if pain is severe, persistent, or associated with vomiting blood.',
     },
     'chest pain': {
-      'conditions': ['Heart Attack', 'Angina', 'Acid Reflux', 'Panic Attack'],
+      'conditions': ['Cardiac Emergency', 'Pulmonary Emergency', 'Acute Illness'],
       'severity': 'emergency',
-      'recommendation': 'CALL EMERGENCY immediately. Chest pain can be life-threatening.',
+      'recommendation': 'Call emergency services immediately and seek urgent in-person care.',
     },
     'difficulty breathing': {
-      'conditions': ['Asthma', 'Pneumonia', 'Heart Failure', 'COVID-19', 'Allergic Reaction'],
+      'conditions': ['Respiratory Emergency', 'Cardiac Emergency', 'Severe Infection'],
       'severity': 'emergency',
-      'recommendation': 'CALL EMERGENCY immediately. This is life-threatening.',
+      'recommendation': 'Call emergency services immediately and seek urgent in-person care.',
     },
     'rash': {
-      'conditions': ['Allergic Reaction', 'Eczema', 'Heat Rash', 'Infection'],
+      'conditions': ['Allergic Reaction', 'Dermatitis', 'Skin Infection'],
       'severity': 'normal',
-      'recommendation': 'Avoid scratching, keep clean. See doctor if spreading or with fever.',
+      'recommendation': 'Monitor and seek care if rash is spreading, painful, or accompanied by fever.',
     },
     'nausea': {
-      'conditions': ['Food Poisoning', 'Pregnancy', 'Migraine', 'Gastritis'],
+      'conditions': ['Gastritis', 'Food-Related Illness', 'Migraine'],
       'severity': 'normal',
-      'recommendation': 'Rest, small sips of water, bland diet. See doctor if persistent.',
+      'recommendation': 'Hydrate and monitor. Seek care for persistent or severe symptoms.',
     },
     'fatigue': {
-      'conditions': ['Anemia', 'Depression', 'Thyroid', 'Chronic Fatigue', 'Malaria'],
+      'conditions': ['Anemia', 'Infection', 'Metabolic Condition'],
       'severity': 'normal',
-      'recommendation': 'Rest, proper nutrition. See doctor if persistent >2 weeks.',
+      'recommendation': 'Seek medical evaluation for prolonged fatigue.',
     },
     'body aches': {
-      'conditions': ['Flu', 'Malaria', 'Dengue', 'Muscle Strain'],
+      'conditions': ['Viral Illness', 'Inflammatory Condition', 'Systemic Infection'],
       'severity': 'urgent',
-      'recommendation': 'Rest, hydration. See doctor if with high fever or severe symptoms.',
+      'recommendation': 'Seek clinical review if severe or persistent, especially with fever.',
     },
     'sore throat': {
-      'conditions': ['Strep Throat', 'Cold', 'Flu', 'Tonsillitis'],
+      'conditions': ['Upper Respiratory Infection', 'Pharyngitis', 'Tonsillitis'],
       'severity': 'normal',
-      'recommendation': 'Warm salt water, rest. See doctor if difficulty swallowing or >3 days.',
+      'recommendation': 'Hydrate and monitor. Seek care if swallowing is difficult or symptoms persist.',
     },
     'diarrhea': {
-      'conditions': ['Food Poisoning', 'Stomach Flu', 'Bacterial Infection'],
+      'conditions': ['Gastroenteritis', 'Foodborne Illness', 'Infection'],
       'severity': 'urgent',
-      'recommendation': 'Stay hydrated, ORS solution. Seek care if blood in stool or dehydration.',
+      'recommendation': 'Use oral rehydration and seek care for blood, dehydration, or persistent symptoms.',
     },
     'back pain': {
-      'conditions': ['Muscle Strain', 'Kidney Stone', 'Herniated Disc'],
+      'conditions': ['Musculoskeletal Strain', 'Nerve Irritation', 'Renal Cause'],
       'severity': 'normal',
-      'recommendation': 'Rest, heat compress, gentle stretching. See doctor if severe or with numbness.',
+      'recommendation': 'Seek care for severe pain, weakness, numbness, or persistent symptoms.',
     },
     'joint pain': {
-      'conditions': ['Arthritis', 'Gout', 'Injury', 'Infection'],
+      'conditions': ['Arthritis', 'Inflammatory Condition', 'Infection'],
       'severity': 'normal',
-      'recommendation': 'Rest, ice, anti-inflammatory. See doctor if swollen or severe.',
+      'recommendation': 'Seek care if swollen, warm, severe, or persistent.',
     },
     'dizziness': {
-      'conditions': ['Low Blood Sugar', 'Dehydration', 'Vertigo', 'Anemia'],
+      'conditions': ['Dehydration', 'Low Blood Pressure', 'Neurological/Cardiac Cause'],
       'severity': 'urgent',
-      'recommendation': 'Sit down, hydrate. Seek immediate care if with chest pain or fainting.',
+      'recommendation':
+          'Sit/lie down safely and seek urgent care if associated with chest pain, weakness, or fainting.',
     },
   };
 
-  // Analyze symptoms using local database (works offline)
-  Map<String, dynamic> analyzeSymptomsLocal(List<String> symptoms) {
-    List<Map<String, dynamic>> allConditions = [];
-    String highestSeverity = 'normal';
+  List<String> _normalizeSymptoms(List<String> symptoms) {
+    final normalized = symptoms
+        .map((s) => s.toLowerCase().trim())
+        .where((s) => s.isNotEmpty)
+        .toSet()
+        .toList();
+    return normalized.take(_maxSymptomsPerRequest).toList();
+  }
 
-    for (String symptom in symptoms) {
-      final normalizedSymptom = symptom.toLowerCase().trim();
-      if (_symptomDatabase.containsKey(normalizedSymptom)) {
-        final data = _symptomDatabase[normalizedSymptom]!;
-        final severity = data['severity'] as String;
-
-        // Track highest severity
-        if (severity == 'emergency') {
-          highestSeverity = 'emergency';
-        } else if (severity == 'urgent' && highestSeverity != 'emergency') {
-          highestSeverity = 'urgent';
-        }
-
-        for (String condition in data['conditions']) {
-          allConditions.add({
-            'condition': condition,
-            'matched_symptom': normalizedSymptom,
-            'severity': severity,
-          });
-        }
+  bool _containsRedFlag(List<String> symptoms) {
+    for (final symptom in symptoms) {
+      if (_redFlagSymptoms.contains(symptom)) {
+        return true;
       }
     }
+    return false;
+  }
 
-    // Sort by severity and remove duplicates
-    allConditions.sort((a, b) {
-      final severityOrder = {'emergency': 0, 'urgent': 1, 'normal': 2};
-      return severityOrder[a['severity']]!.compareTo(severityOrder[b['severity']]!);
-    });
-
-    // Get unique conditions
-    final uniqueConditions = <String>{};
-    final filteredConditions = <Map<String, dynamic>>[];
-    for (var c in allConditions) {
-      if (uniqueConditions.add(c['condition'])) {
-        filteredConditions.add(c);
-      }
-    }
-
-    String recommendation;
-    if (highestSeverity == 'emergency') {
-      recommendation = 'IMMEDIATE MEDICAL ATTENTION REQUIRED. Call emergency services or go to nearest hospital immediately.';
-    } else if (highestSeverity == 'urgent') {
-      recommendation = 'Schedule a doctor appointment soon. Monitor symptoms closely.';
-    } else {
-      recommendation = 'Rest and monitor. Consult a doctor if symptoms worsen or persist.';
-    }
-
+  Map<String, dynamic> _safeResponse({
+    required List<String> possibleConditions,
+    required String severity,
+    required String recommendation,
+    required bool isOffline,
+    required List<String> matchedSymptoms,
+    required bool redFlagTriggered,
+  }) {
     return {
-      'possible_conditions': filteredConditions.take(5).map((c) => c['condition']).toList(),
-      'severity': highestSeverity,
+      'possible_conditions': possibleConditions,
+      'severity': severity,
       'recommendation': recommendation,
-      'is_offline': true,
+      'is_offline': isOffline,
+      'safety_disclaimer': safetyDisclaimer,
+      'triage_only': true,
+      'emergency_contacts': AppConstants.emergencyNumbers,
+      'matched_symptoms': matchedSymptoms,
+      'red_flag_triggered': redFlagTriggered,
     };
   }
 
-  // Analyze symptoms using external AI (when online)
+  Map<String, dynamic> analyzeSymptomsLocal(List<String> symptoms) {
+    final normalizedSymptoms = _normalizeSymptoms(symptoms);
+
+    if (normalizedSymptoms.isEmpty) {
+      return _safeResponse(
+        possibleConditions: const <String>[],
+        severity: 'normal',
+        recommendation: 'No symptoms provided. If unwell, consult a licensed clinician.',
+        isOffline: true,
+        matchedSymptoms: const <String>[],
+        redFlagTriggered: false,
+      );
+    }
+
+    if (_containsRedFlag(normalizedSymptoms)) {
+      return _safeResponse(
+        possibleConditions: const <String>['Potential medical emergency'],
+        severity: 'emergency',
+        recommendation:
+            'Red-flag symptoms detected. Call emergency services immediately and seek in-person care.',
+        isOffline: true,
+        matchedSymptoms: normalizedSymptoms,
+        redFlagTriggered: true,
+      );
+    }
+
+    final allConditions = <Map<String, dynamic>>[];
+    var highestSeverity = 'normal';
+    final matched = <String>[];
+
+    for (final symptom in normalizedSymptoms) {
+      final data = _symptomDatabase[symptom];
+      if (data == null) {
+        continue;
+      }
+      matched.add(symptom);
+      final severity = data['severity'] as String;
+      if (severity == 'urgent') {
+        highestSeverity = 'urgent';
+      }
+      for (final condition in data['conditions'] as List<dynamic>) {
+        allConditions.add({
+          'condition': condition.toString(),
+          'severity': severity,
+        });
+      }
+    }
+
+    if (matched.isEmpty) {
+      return _safeResponse(
+        possibleConditions: const <String>['Unrecognized symptom pattern'],
+        severity: 'urgent',
+        recommendation:
+            'Symptoms are not recognized confidently. Seek licensed clinical evaluation soon.',
+        isOffline: true,
+        matchedSymptoms: normalizedSymptoms,
+        redFlagTriggered: false,
+      );
+    }
+
+    allConditions.sort((a, b) {
+      const order = {'emergency': 0, 'urgent': 1, 'normal': 2};
+      return (order[a['severity']] ?? 9).compareTo(order[b['severity']] ?? 9);
+    });
+
+    final uniqueConditions = <String>{};
+    final filteredConditions = <String>[];
+    for (final item in allConditions) {
+      final c = item['condition'] as String;
+      if (uniqueConditions.add(c)) {
+        filteredConditions.add(c);
+      }
+      if (filteredConditions.length >= 5) {
+        break;
+      }
+    }
+
+    final recommendation = highestSeverity == 'urgent'
+        ? 'Urgent review recommended. If symptoms worsen, seek emergency care.'
+        : 'Monitor symptoms and consult a clinician if they persist or worsen.';
+
+    return _safeResponse(
+      possibleConditions: filteredConditions,
+      severity: highestSeverity,
+      recommendation: recommendation,
+      isOffline: true,
+      matchedSymptoms: matched,
+      redFlagTriggered: false,
+    );
+  }
+
   Future<Map<String, dynamic>> analyzeSymptomsAI(List<String> symptoms) async {
+    final normalizedSymptoms = _normalizeSymptoms(symptoms);
+
+    if (_containsRedFlag(normalizedSymptoms)) {
+      return analyzeSymptomsLocal(normalizedSymptoms);
+    }
+
     if (_openAiApiKey == null) {
-      // Fallback to local if no API key
-      return analyzeSymptomsLocal(symptoms);
+      return analyzeSymptomsLocal(normalizedSymptoms);
     }
 
     try {
@@ -164,47 +261,61 @@ class AIService {
           'messages': [
             {
               'role': 'system',
-              'content': 'You are a medical symptom analyzer. Analyze the symptoms and provide: 1) Possible conditions 2) Severity level (emergency, urgent, normal) 3) Recommended action. Respond in JSON format: {"possible_conditions": [], "severity": "", "recommendation": ""}',
+              'content':
+                  'You are a triage assistant. Do not diagnose. Return JSON with keys '
+                      'possible_conditions (array max 5), severity (emergency|urgent|normal), recommendation (string).',
             },
             {
               'role': 'user',
-              'content': 'Patient symptoms: ${symptoms.join(", ")}',
+              'content': 'Symptoms: ${normalizedSymptoms.join(', ')}',
             }
           ],
-          'temperature': 0.3,
+          'temperature': 0.1,
         }),
       );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final content = data['choices'][0]['message']['content'];
-        // Parse JSON from response
-        final parsed = jsonDecode(content);
-        return {
-          ...parsed,
-          'is_offline': false,
-        };
-      } else {
-        return analyzeSymptomsLocal(symptoms);
+      if (response.statusCode != 200) {
+        return analyzeSymptomsLocal(normalizedSymptoms);
       }
-    } catch (e) {
-      // Fallback to local on error
-      return analyzeSymptomsLocal(symptoms);
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final content =
+          ((data['choices'] as List<dynamic>).first as Map<String, dynamic>)['message']['content'];
+      final parsed = jsonDecode(content as String) as Map<String, dynamic>;
+
+      final severityRaw = parsed['severity']?.toString().toLowerCase() ?? 'normal';
+      final safeSeverity = {'emergency', 'urgent', 'normal'}.contains(severityRaw)
+          ? severityRaw
+          : 'normal';
+      final conditions = parsed['possible_conditions'] is List
+          ? List<String>.from(parsed['possible_conditions'] as List<dynamic>)
+          : <String>[];
+
+      return _safeResponse(
+        possibleConditions: conditions.take(5).toList(),
+        severity: safeSeverity,
+        recommendation: parsed['recommendation']?.toString() ??
+            'Consult a licensed clinician for further evaluation.',
+        isOffline: false,
+        matchedSymptoms: normalizedSymptoms,
+        redFlagTriggered: false,
+      );
+    } catch (_) {
+      return analyzeSymptomsLocal(normalizedSymptoms);
     }
   }
 
-  // Main analysis method - uses AI when online, local when offline
   Future<Map<String, dynamic>> analyzeSymptoms(
     List<String> symptoms, {
     bool forceOffline = false,
   }) async {
+    final normalizedSymptoms = _normalizeSymptoms(symptoms);
     if (forceOffline) {
-      return analyzeSymptomsLocal(symptoms);
+      return analyzeSymptomsLocal(normalizedSymptoms);
     }
-    return analyzeSymptomsAI(symptoms);
+    return analyzeSymptomsAI(normalizedSymptoms);
   }
 
-  // Get list of all known symptoms
   List<String> getKnownSymptoms() {
     return _symptomDatabase.keys.toList()..sort();
   }

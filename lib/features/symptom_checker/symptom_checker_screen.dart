@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
-import '../../core/theme/app_theme.dart';
+
 import '../../core/providers/providers.dart';
+import '../../core/theme/app_theme.dart';
 import '../../models/symptom_record.dart';
 import '../../widgets/sync_status_action.dart';
 
@@ -17,6 +19,7 @@ class _SymptomCheckerScreenState extends ConsumerState<SymptomCheckerScreen> {
   final _symptomController = TextEditingController();
   final List<String> _selectedSymptoms = [];
   bool _isAnalyzing = false;
+  bool _consentChecked = false;
   Map<String, dynamic>? _analysisResult;
 
   final List<String> _commonSymptoms = [
@@ -62,7 +65,16 @@ class _SymptomCheckerScreenState extends ConsumerState<SymptomCheckerScreen> {
   Future<void> _analyzeSymptoms() async {
     if (_selectedSymptoms.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please add at least one symptom')),
+        const SnackBar(content: Text('Please add at least one symptom.')),
+      );
+      return;
+    }
+
+    if (!_consentChecked) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please confirm the triage safety notice before continuing.'),
+        ),
       );
       return;
     }
@@ -75,21 +87,22 @@ class _SymptomCheckerScreenState extends ConsumerState<SymptomCheckerScreen> {
     final aiService = ref.read(aiServiceProvider);
     final result = await aiService.analyzeSymptoms(_selectedSymptoms);
 
-    // Save to records
+    final user = ref.read(currentUserProvider);
     final record = SymptomRecord(
       id: const Uuid().v4(),
-      userId: 'current_user', // Replace with actual user ID
+      userId: user?.id ?? 'guest_user',
       symptoms: _selectedSymptoms,
       aiDiagnosis: result['possible_conditions']?.join(', '),
-      severity: result['severity'] ?? 'normal',
-      recommendedAction: result['recommendation'],
+      severity: result['severity']?.toString() ?? 'normal',
+      recommendedAction: result['recommendation']?.toString(),
       possibleConditions: result['possible_conditions'] != null
-          ? List<String>.from(result['possible_conditions'])
+          ? List<String>.from(result['possible_conditions'] as List<dynamic>)
           : null,
       timestamp: DateTime.now(),
     );
 
     ref.read(symptomRecordsProvider.notifier).addRecord(record);
+    await ref.read(symptomRepositoryProvider).create(record);
 
     setState(() {
       _isAnalyzing = false;
@@ -101,6 +114,7 @@ class _SymptomCheckerScreenState extends ConsumerState<SymptomCheckerScreen> {
     setState(() {
       _selectedSymptoms.clear();
       _analysisResult = null;
+      _consentChecked = false;
     });
   }
 
@@ -128,12 +142,14 @@ class _SymptomCheckerScreenState extends ConsumerState<SymptomCheckerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final analysis = _analysisResult;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('AI Symptom Checker'),
+        title: const Text('Symptom Triage'),
         actions: [
           const SyncStatusAction(),
-          if (_selectedSymptoms.isNotEmpty || _analysisResult != null)
+          if (_selectedSymptoms.isNotEmpty || analysis != null)
             IconButton(
               icon: const Icon(Icons.refresh),
               onPressed: _reset,
@@ -145,63 +161,65 @@ class _SymptomCheckerScreenState extends ConsumerState<SymptomCheckerScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Info Card
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                color: AppTheme.errorColor.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppTheme.errorColor.withValues(alpha: 0.4)),
               ),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.info_outline, color: AppTheme.primaryColor),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'Describe your symptoms and our AI will help identify possible conditions.',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
+                  const Row(
+                    children: [
+                      Icon(Icons.shield_outlined, color: AppTheme.errorColor),
+                      SizedBox(width: 8),
+                      Text(
+                        'Safety Notice',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.errorColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'This feature is triage guidance only and does not provide medical diagnosis. '
+                    'For severe symptoms, use emergency care immediately.',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  CheckboxListTile(
+                    value: _consentChecked,
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('I understand and want triage guidance.'),
+                    onChanged: (v) => setState(() => _consentChecked = v ?? false),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 24),
-
-            // Add Symptoms
             Text(
               'What symptoms are you experiencing?',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-
-            // Input field
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _symptomController,
-                    decoration: InputDecoration(
-                      hintText: 'Type a symptom...',
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.add),
-                        onPressed: () => _addSymptom(_symptomController.text),
-                      ),
-                    ),
-                    onSubmitted: _addSymptom,
-                  ),
+            TextField(
+              controller: _symptomController,
+              decoration: InputDecoration(
+                hintText: 'Type a symptom...',
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.add),
+                  onPressed: () => _addSymptom(_symptomController.text),
                 ),
-              ],
+              ),
+              onSubmitted: _addSymptom,
             ),
             const SizedBox(height: 16),
-
-            // Common symptoms chips
             Text(
               'Common symptoms:',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.grey[600],
-              ),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
             ),
             const SizedBox(height: 8),
             Wrap(
@@ -222,8 +240,6 @@ class _SymptomCheckerScreenState extends ConsumerState<SymptomCheckerScreen> {
               }).toList(),
             ),
             const SizedBox(height: 24),
-
-            // Selected symptoms
             if (_selectedSymptoms.isNotEmpty) ...[
               Text(
                 'Selected symptoms:',
@@ -246,8 +262,6 @@ class _SymptomCheckerScreenState extends ConsumerState<SymptomCheckerScreen> {
                 }).toList(),
               ),
               const SizedBox(height: 24),
-
-              // Analyze button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
@@ -256,38 +270,29 @@ class _SymptomCheckerScreenState extends ConsumerState<SymptomCheckerScreen> {
                       ? const SizedBox(
                           width: 20,
                           height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                         )
                       : const Icon(Icons.psychology),
-                  label: Text(_isAnalyzing ? 'Analyzing...' : 'Analyze Symptoms'),
+                  label: Text(_isAnalyzing ? 'Analyzing...' : 'Run Triage Check'),
                 ),
               ),
             ],
-
-            // Results
-            if (_analysisResult != null) ...[
+            if (analysis != null) ...[
               const SizedBox(height: 24),
               const Divider(),
               const SizedBox(height: 16),
-
-              // Severity
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: _getSeverityColor(_analysisResult!['severity']).withValues(alpha: 0.1),
+                  color: _getSeverityColor(analysis['severity']).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: _getSeverityColor(_analysisResult!['severity']),
-                  ),
+                  border: Border.all(color: _getSeverityColor(analysis['severity'])),
                 ),
                 child: Row(
                   children: [
                     Icon(
-                      _getSeverityIcon(_analysisResult!['severity']),
-                      color: _getSeverityColor(_analysisResult!['severity']),
+                      _getSeverityIcon(analysis['severity']),
+                      color: _getSeverityColor(analysis['severity']),
                       size: 32,
                     ),
                     const SizedBox(width: 12),
@@ -296,75 +301,58 @@ class _SymptomCheckerScreenState extends ConsumerState<SymptomCheckerScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Severity: ${_analysisResult!['severity'].toString().toUpperCase()}',
+                            'Triage urgency: ${analysis['severity'].toString().toUpperCase()}',
                             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: _getSeverityColor(_analysisResult!['severity']),
-                            ),
+                                  fontWeight: FontWeight.bold,
+                                  color: _getSeverityColor(analysis['severity']),
+                                ),
                           ),
                           const SizedBox(height: 4),
-                          Text(
-                            _analysisResult!['recommendation'] ?? '',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
+                          Text(analysis['recommendation']?.toString() ?? ''),
                         ],
                       ),
                     ),
                   ],
                 ),
               ),
+              const SizedBox(height: 12),
+              Text(
+                analysis['safety_disclaimer']?.toString() ?? '',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.grey[700],
+                      fontStyle: FontStyle.italic,
+                    ),
+              ),
               const SizedBox(height: 16),
-
-              // Possible conditions
-              if (_analysisResult!['possible_conditions'] != null &&
-                  (_analysisResult!['possible_conditions'] as List).isNotEmpty) ...[
+              if (analysis['possible_conditions'] != null &&
+                  (analysis['possible_conditions'] as List).isNotEmpty) ...[
                 Text(
-                  'Possible Conditions:',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  'Potential causes (non-diagnostic):',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
-                ...(_analysisResult!['possible_conditions'] as List).map((condition) {
+                ...((analysis['possible_conditions'] as List).cast<String>()).map((condition) {
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4),
                     child: Row(
                       children: [
                         const Icon(Icons.medical_services, size: 18, color: AppTheme.primaryColor),
                         const SizedBox(width: 8),
-                        Text(condition),
+                        Expanded(child: Text(condition)),
                       ],
                     ),
                   );
                 }),
               ],
-
               const SizedBox(height: 24),
-
-              // Action buttons
-              if (_analysisResult!['severity'] == 'emergency')
+              if (analysis['severity'] == 'emergency')
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
-                    onPressed: () {
-                      // Navigate to emergency
-                    },
+                    onPressed: () => context.push('/emergency'),
                     icon: const Icon(Icons.emergency),
-                    label: const Text('Call Emergency Services'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.errorColor,
-                    ),
-                  ),
-                ),
-              if (_analysisResult!['severity'] == 'urgent')
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      // Navigate to providers
-                    },
-                    icon: const Icon(Icons.search),
-                    label: const Text('Find a Doctor'),
+                    label: const Text('Open Emergency Services'),
+                    style: ElevatedButton.styleFrom(backgroundColor: AppTheme.errorColor),
                   ),
                 ),
             ],

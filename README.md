@@ -200,6 +200,7 @@ These include hero/banner/profile/provider placeholders wired into key screens.
 See `docs/` for operational and delivery documentation, including:
 - onboarding runbook
 - environment setup
+- clinical safety guardrails
 - security baseline
 - testing plan
 - release signoff docs
