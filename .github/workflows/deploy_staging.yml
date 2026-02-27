@@ -35,6 +35,6 @@ jobs:
           fi
           firebase deploy \
             --project "${FIREBASE_PROJECT_ID_STAGING}" \
-            --only "hosting,firestore:rules,firestore:indexes" \
+            --only "hosting,firestore:rules,firestore:indexes,storage" \
             --token "${FIREBASE_TOKEN}" \
             --non-interactive

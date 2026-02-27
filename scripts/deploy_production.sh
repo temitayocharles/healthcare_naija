@@ -15,7 +15,7 @@ flutter build web --release
 
 firebase deploy \
   --project "${PROJECT_ID}" \
-  --only "hosting,firestore:rules,firestore:indexes" \
+  --only "hosting,firestore:rules,firestore:indexes,storage" \
   --non-interactive
 
 echo "Production deploy complete for ${PROJECT_ID}."

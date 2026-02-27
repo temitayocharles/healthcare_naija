@@ -5,67 +5,261 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function isOwner(userId) {
-      return signedIn() && request.auth.uid == userId;
-    }
-
     function role() {
       return signedIn() ? request.auth.token.role : null;
     }
 
-    function isProvider() {
-      return role() == "provider" || role() == "admin";
+    function isAdmin() {
+      return role() == 'admin';
+    }
+
+    function isProviderRole() {
+      return role() == 'provider' || isAdmin();
+    }
+
+    function isOwner(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function isShortString(value, max) {
+      return value is string && value.size() > 0 && value.size() <= max;
+    }
+
+    function isOptionalString(value, max) {
+      return value == null || (value is string && value.size() <= max);
+    }
+
+    function isOptionalBool(value) {
+      return value == null || value is bool;
+    }
+
+    function isNumber(value) {
+      return value is int || value is float;
+    }
+
+    function isOptionalNumber(value) {
+      return value == null || isNumber(value);
+    }
+
+    function isDateString(value) {
+      return value is string && value.size() >= 10 && value.size() <= 64;
+    }
+
+    function hasOnlyKeys(data, allowed) {
+      return data.keys().hasOnly(allowed);
+    }
+
+    function hasRequiredKeys(data, required) {
+      return data.keys().hasAll(required);
+    }
+
+    function validUserDoc(data, userId) {
+      return hasOnlyKeys(data, [
+          'id', 'email', 'phone', 'name', 'role', 'profileImageUrl',
+          'state', 'lga', 'address', 'latitude', 'longitude',
+          'createdAt', 'isVerified', 'medicalHistory'
+        ])
+        && hasRequiredKeys(data, ['id', 'phone', 'name', 'role', 'createdAt', 'isVerified'])
+        && data.id == userId
+        && isOptionalString(data.email, 254)
+        && isShortString(data.phone, 20)
+        && isShortString(data.name, 120)
+        && isShortString(data.role, 40)
+        && isOptionalString(data.profileImageUrl, 2048)
+        && isOptionalString(data.state, 80)
+        && isOptionalString(data.lga, 80)
+        && isOptionalString(data.address, 512)
+        && isOptionalNumber(data.latitude)
+        && isOptionalNumber(data.longitude)
+        && isDateString(data.createdAt)
+        && data.isVerified is bool;
+    }
+
+    function validProviderDoc(data, providerId) {
+      return hasOnlyKeys(data, [
+          'id', 'name', 'type', 'specialty', 'description', 'phone', 'email',
+          'profileImageUrl', 'state', 'lga', 'address', 'latitude', 'longitude',
+          'rating', 'reviewCount', 'priceMin', 'priceMax', 'isAvailable',
+          'workingDays', 'workingHours', 'services', 'acceptedInsurance',
+          'createdAt', 'isVerified', 'licenseNumber'
+        ])
+        && hasRequiredKeys(data, ['id', 'name', 'type', 'phone', 'state', 'latitude', 'longitude', 'createdAt'])
+        && data.id == providerId
+        && isShortString(data.name, 120)
+        && isShortString(data.type, 60)
+        && isOptionalString(data.specialty, 120)
+        && isOptionalString(data.description, 2000)
+        && isShortString(data.phone, 20)
+        && isOptionalString(data.email, 254)
+        && isOptionalString(data.profileImageUrl, 2048)
+        && isShortString(data.state, 80)
+        && isOptionalString(data.lga, 80)
+        && isOptionalString(data.address, 512)
+        && isNumber(data.latitude)
+        && isNumber(data.longitude)
+        && isOptionalNumber(data.rating)
+        && (data.reviewCount == null || data.reviewCount is int)
+        && isOptionalNumber(data.priceMin)
+        && isOptionalNumber(data.priceMax)
+        && isOptionalBool(data.isAvailable)
+        && isDateString(data.createdAt)
+        && isOptionalBool(data.isVerified)
+        && isOptionalString(data.licenseNumber, 120);
+    }
+
+    function validAppointmentDoc(data, appointmentId) {
+      return hasOnlyKeys(data, [
+          'id', 'patientId', 'providerId', 'providerName', 'providerType',
+          'dateTime', 'status', 'notes', 'symptoms', 'createdAt', 'isEmergency',
+          'appointmentType'
+        ])
+        && hasRequiredKeys(data, [
+          'id', 'patientId', 'providerId', 'providerName', 'providerType',
+          'dateTime', 'status', 'createdAt'
+        ])
+        && data.id == appointmentId
+        && isShortString(data.patientId, 128)
+        && isShortString(data.providerId, 128)
+        && isShortString(data.providerName, 160)
+        && isShortString(data.providerType, 60)
+        && isDateString(data.dateTime)
+        && data.status in ['pending', 'confirmed', 'completed', 'cancelled']
+        && isOptionalString(data.notes, 2000)
+        && isOptionalString(data.symptoms, 2000)
+        && isDateString(data.createdAt)
+        && isOptionalBool(data.isEmergency)
+        && isOptionalString(data.appointmentType, 40);
+    }
+
+    function validHealthRecordDoc(data, recordId) {
+      return hasOnlyKeys(data, [
+          'id', 'userId', 'title', 'type', 'description', 'fileUrl',
+          'date', 'providerName', 'tags', 'isShared', 'createdAt'
+        ])
+        && hasRequiredKeys(data, ['id', 'userId', 'title', 'type', 'date', 'createdAt'])
+        && data.id == recordId
+        && isShortString(data.userId, 128)
+        && isShortString(data.title, 200)
+        && isShortString(data.type, 60)
+        && isOptionalString(data.description, 2000)
+        && isOptionalString(data.fileUrl, 2048)
+        && isDateString(data.date)
+        && isOptionalString(data.providerName, 120)
+        && isOptionalBool(data.isShared)
+        && isDateString(data.createdAt);
+    }
+
+    function validSymptomRecordDoc(data, recordId) {
+      return hasOnlyKeys(data, [
+          'id', 'userId', 'symptoms', 'aiDiagnosis', 'severity',
+          'recommendedAction', 'possibleConditions', 'timestamp', 'isRead'
+        ])
+        && hasRequiredKeys(data, ['id', 'userId', 'symptoms', 'severity', 'timestamp'])
+        && data.id == recordId
+        && isShortString(data.userId, 128)
+        && data.symptoms is list
+        && data.severity in ['emergency', 'urgent', 'normal']
+        && isOptionalString(data.aiDiagnosis, 1000)
+        && isOptionalString(data.recommendedAction, 2000)
+        && isDateString(data.timestamp)
+        && isOptionalBool(data.isRead);
+    }
+
+    function validShareDoc(data) {
+      return hasOnlyKeys(data, ['recordId', 'patientId', 'caregiverId', 'fileUrl', 'title', 'sharedAt'])
+        && hasRequiredKeys(data, ['recordId', 'patientId', 'caregiverId', 'fileUrl', 'title', 'sharedAt'])
+        && isShortString(data.recordId, 128)
+        && isShortString(data.patientId, 128)
+        && isShortString(data.caregiverId, 128)
+        && isShortString(data.fileUrl, 2048)
+        && isShortString(data.title, 200)
+        && isDateString(data.sharedAt);
+    }
+
+    function validConversationDoc(data) {
+      return hasOnlyKeys(data, ['participants', 'lastMessage', 'lastMessageAt'])
+        && hasRequiredKeys(data, ['participants', 'lastMessageAt'])
+        && data.participants is list
+        && data.participants.size() == 2
+        && request.auth.uid in data.participants
+        && isOptionalString(data.lastMessage, 2000)
+        && isDateString(data.lastMessageAt);
+    }
+
+    function validMessageDoc(data) {
+      return hasOnlyKeys(data, [
+          'id', 'senderId', 'receiverId', 'text', 'attachmentUrl',
+          'attachmentName', 'attachmentType', 'sharedRecordId', 'createdAt'
+        ])
+        && hasRequiredKeys(data, ['id', 'senderId', 'receiverId', 'createdAt'])
+        && isShortString(data.id, 128)
+        && isShortString(data.senderId, 128)
+        && isShortString(data.receiverId, 128)
+        && isOptionalString(data.text, 4000)
+        && isOptionalString(data.attachmentUrl, 2048)
+        && isOptionalString(data.attachmentName, 256)
+        && isOptionalString(data.attachmentType, 128)
+        && isOptionalString(data.sharedRecordId, 128)
+        && isDateString(data.createdAt);
     }
 
     match /users/{userId} {
-      allow read: if isOwner(userId);
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId);
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && validUserDoc(request.resource.data, userId);
+      allow update: if isOwner(userId) && validUserDoc(request.resource.data, userId);
       allow delete: if false;
     }
 
     match /providers/{providerId} {
       allow read: if true;
-      allow create, update: if isProvider();
-      allow delete: if role() == "admin";
+      allow create, update: if isProviderRole() && validProviderDoc(request.resource.data, providerId);
+      allow delete: if isAdmin();
     }
 
     match /appointments/{appointmentId} {
       allow read: if signedIn() &&
         (resource.data.patientId == request.auth.uid ||
          resource.data.providerId == request.auth.uid ||
-         role() == "admin");
+         isAdmin());
 
       allow create: if signedIn() &&
-        request.resource.data.patientId == request.auth.uid;
+        request.resource.data.patientId == request.auth.uid &&
+        validAppointmentDoc(request.resource.data, appointmentId);
 
       allow update: if signedIn() &&
+        validAppointmentDoc(request.resource.data, appointmentId) &&
         (resource.data.patientId == request.auth.uid ||
          resource.data.providerId == request.auth.uid ||
-         role() == "admin");
+         isAdmin()) &&
+        request.resource.data.patientId == resource.data.patientId &&
+        request.resource.data.providerId == resource.data.providerId;
 
       allow delete: if false;
     }
 
     match /health_records/{recordId} {
       allow read: if signedIn() &&
-        (resource.data.userId == request.auth.uid ||
-         role() == "admin");
+        (resource.data.userId == request.auth.uid || isAdmin());
       allow create: if signedIn() &&
-        request.resource.data.userId == request.auth.uid;
+        request.resource.data.userId == request.auth.uid &&
+        validHealthRecordDoc(request.resource.data, recordId);
       allow update: if signedIn() &&
-        (resource.data.userId == request.auth.uid || role() == "admin");
+        validHealthRecordDoc(request.resource.data, recordId) &&
+        (resource.data.userId == request.auth.uid || isAdmin()) &&
+        request.resource.data.userId == resource.data.userId;
       allow delete: if false;
     }
 
     match /symptom_records/{recordId} {
       allow read: if signedIn() &&
-        (resource.data.userId == request.auth.uid ||
-         role() == "admin");
+        (resource.data.userId == request.auth.uid || isAdmin());
       allow create: if signedIn() &&
-        request.resource.data.userId == request.auth.uid;
+        request.resource.data.userId == request.auth.uid &&
+        validSymptomRecordDoc(request.resource.data, recordId);
       allow update: if signedIn() &&
-        (resource.data.userId == request.auth.uid || role() == "admin");
+        validSymptomRecordDoc(request.resource.data, recordId) &&
+        (resource.data.userId == request.auth.uid || isAdmin()) &&
+        request.resource.data.userId == resource.data.userId;
       allow delete: if false;
     }
 
@@ -73,25 +267,29 @@ service cloud.firestore {
       allow read: if signedIn() &&
         (resource.data.patientId == request.auth.uid ||
          resource.data.caregiverId == request.auth.uid ||
-         role() == "admin");
+         isAdmin());
       allow create, update: if signedIn() &&
-        request.resource.data.patientId == request.auth.uid;
+        request.resource.data.patientId == request.auth.uid &&
+        validShareDoc(request.resource.data);
       allow delete: if false;
     }
 
     match /conversations/{conversationId} {
-      allow read: if signedIn() &&
-        request.auth.uid in resource.data.participants;
-      allow create: if signedIn() &&
-        request.auth.uid in request.resource.data.participants;
+      allow read: if signedIn() && request.auth.uid in resource.data.participants;
+      allow create: if signedIn() && validConversationDoc(request.resource.data);
       allow update: if signedIn() &&
-        request.auth.uid in resource.data.participants;
+        request.auth.uid in resource.data.participants &&
+        request.resource.data.participants == resource.data.participants &&
+        validConversationDoc(request.resource.data);
+      allow delete: if false;
 
       match /messages/{messageId} {
         allow read: if signedIn() &&
           request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
         allow create: if signedIn() &&
+          validMessageDoc(request.resource.data) &&
           request.resource.data.senderId == request.auth.uid &&
+          request.resource.data.receiverId in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants &&
           request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
         allow update, delete: if false;
       }
