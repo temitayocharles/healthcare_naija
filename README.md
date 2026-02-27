@@ -135,11 +135,21 @@ flutter test
 
 ## Firebase Configuration
 
+### Android
+
+1. In Firebase Console, add Android app with package name:
+   `com.nigeriacare.nigeria_health_care`
+2. Download `google-services.json`.
+3. Place it at `android/app/google-services.json`.
+
 ### iOS
 
 1. Download `GoogleService-Info.plist` from Firebase Console for the iOS app.
 2. Place it at `ios/Runner/GoogleService-Info.plist`.
 3. Ensure your iOS bundle ID in Xcode matches Firebase app bundle ID.
+
+Current iOS bundle ID in this repo:
+`com.nigeriacare.nigeriaHealthCare`
 
 ### Web
 

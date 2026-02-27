@@ -102,12 +102,25 @@ Use your Firebase project values:
 - Storage bucket: `healthcare-naija.firebasestorage.app`
 - Web `appId`: format `1:<sender-id>:web:<hash>`
 - iOS `GoogleService-Info.plist` from Firebase Console
+- Android `google-services.json` from Firebase Console
+
+Android setup:
+
+1. Firebase Console -> Project settings -> Your apps -> Add app -> Android.
+2. Android package name must match app config exactly:
+   `com.nigeriacare.nigeria_health_care`
+3. Download `google-services.json`.
+4. Place file at `android/app/google-services.json`.
+5. Re-run `flutter clean && flutter pub get` once after adding it.
 
 iOS setup:
 
 1. Download `GoogleService-Info.plist` from Firebase Console (iOS app).
 2. Place file at `ios/Runner/GoogleService-Info.plist`.
 3. Confirm iOS bundle ID in Xcode equals Firebase iOS bundle ID.
+
+Current iOS bundle ID in repo:
+`com.nigeriacare.nigeriaHealthCare`
 
 Web setup:
 
