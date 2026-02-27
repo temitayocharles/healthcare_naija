@@ -3,7 +3,8 @@
 This runbook explains exactly how to publish this app for end users.
 
 Current app identifiers in this repo:
-- Android package name: `com.nigeriacare.nigeria_health_care`
+- App display name: `CareRoviq`
+- Android package name: `hcn.temitayocharles.online`
 - iOS bundle ID: `hcn.temitayocharles.online`
 - Flutter app version source: `pubspec.yaml` (`version: x.y.z+buildNumber`)
 
@@ -43,7 +44,7 @@ flutter pub get
 2. Complete app content forms (privacy, data safety, target audience, etc.).
 3. Set up signing:
    - Recommended: Play App Signing enabled.
-4. Ensure Firebase Android app exists for package `com.nigeriacare.nigeria_health_care`.
+4. Ensure Firebase Android app exists for package `hcn.temitayocharles.online`.
 
 ## 3.2 Build AAB
 
@@ -57,6 +58,13 @@ flutter build appbundle --release
 
 Output:
 - `build/app/outputs/bundle/release/app-release.aab`
+
+Optional preflight:
+
+```bash
+flutter analyze
+flutter test
+```
 
 ## 3.3 Upload and release
 
@@ -176,3 +184,13 @@ Track first 72h:
 If severe regression appears:
 - Halt rollout
 - Hotfix branch and expedited patch release
+
+## 10. Required Accounts and Access
+
+Before publishing, ensure:
+1. Google Play Console owner or release-manager access
+2. Apple Developer + App Store Connect access
+3. Firebase project admin/editor access for `healthcare-naija`
+4. Legal pages live and reachable:
+   - Privacy Policy URL
+   - Support URL

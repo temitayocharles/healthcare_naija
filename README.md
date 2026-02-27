@@ -138,7 +138,7 @@ flutter test
 ### Android
 
 1. In Firebase Console, add Android app with package name:
-   `com.nigeriacare.nigeria_health_care`
+   `hcn.temitayocharles.online`
 2. Download `google-services.json`.
 3. Place it at `android/app/google-services.json`.
 

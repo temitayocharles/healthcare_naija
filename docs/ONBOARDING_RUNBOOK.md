@@ -115,7 +115,7 @@ Android setup:
 
 1. Firebase Console -> Project settings -> Your apps -> Add app -> Android.
 2. Android package name must match app config exactly:
-   `com.nigeriacare.nigeria_health_care`
+   `hcn.temitayocharles.online`
 3. Download `google-services.json`.
 4. Place file at `android/app/google-services.json`.
 5. Re-run `flutter clean && flutter pub get` once after adding it.
@@ -144,6 +144,13 @@ Important:
 
 - Firebase Web API keys are public identifiers; enforce restrictions in Google Cloud.
 - `FIREBASE_TOKEN` (for deploy) and AI keys are secrets; keep in shell/CI secrets only.
+
+Firebase emulator note:
+
+- Firestore emulator tests require a working Java runtime in `PATH`.
+- If `firebase emulators:exec` says Java is missing, set:
+  - `export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"`
+  - `export PATH="$JAVA_HOME/bin:$PATH"`
 
 ## 4.6 Feature Flags (Build-Time + Runtime)
 
