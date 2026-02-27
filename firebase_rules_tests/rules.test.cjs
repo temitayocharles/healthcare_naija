@@ -1,6 +1,7 @@
 const { test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
+const path = require('node:path');
 const {
   assertFails,
   assertSucceeds,
@@ -10,16 +11,19 @@ const {
 let testEnv;
 
 before(async () => {
+  const firestoreRulesPath = path.resolve(__dirname, '..', 'firestore.rules');
   testEnv = await initializeTestEnvironment({
     projectId: 'demo-nigeria-healthcare',
     firestore: {
-      rules: fs.readFileSync('firestore.rules', 'utf8'),
+      rules: fs.readFileSync(firestoreRulesPath, 'utf8'),
     },
   });
 });
 
 after(async () => {
-  await testEnv.cleanup();
+  if (testEnv) {
+    await testEnv.cleanup();
+  }
 });
 
 test('users: owner can write own profile', async () => {
