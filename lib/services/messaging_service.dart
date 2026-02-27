@@ -1,22 +1,18 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:nigeria_health_care/lib/core/config/firebase_config.dart';
+import 'package:flutter/foundation.dart';
 
 class MessagingService {
   static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
 
   static Future<void> initialize() async {
     await _messaging.requestPermission();
-    String? token = await _messaging.getToken();
-    print('Firebase Messaging Token: $token');
+    final String? token = await _messaging.getToken();
+    debugPrint('Firebase Messaging Token: $token');
   }
 
   static Future<void> sendNotification(String title, String body) async {
-    await _messaging.sendToTopic(
-      'all',
-      Notification(
-        title: title,
-        body: body,
-      ),
-    );
+    // FCM client SDK cannot send push notifications directly.
+    // This is kept as a no-op entry point for future backend integration.
+    await Future<void>.value();
   }
 }

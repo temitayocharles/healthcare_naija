@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nigeria_health_care/lib/models/user.dart';
+import 'package:nigeria_healthcare_app/models/user.dart';
 
 void main() {
   test('User model should be created correctly', () {

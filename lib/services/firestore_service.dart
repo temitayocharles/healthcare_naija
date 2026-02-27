@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:nigeria_health_care/lib/models/health_record.dart';
-import 'package:nigeria_health_care/lib/models/provider.dart';
-import 'package:nigeria_health_care/lib/models/symptom_record.dart';
-import 'package:nigeria_health_care/lib/models/user.dart';
+import '../models/health_record.dart';
+import '../models/provider.dart';
+import '../models/symptom_record.dart';
+import '../models/user.dart';
 
 class FirestoreService {
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:nigeria_health_care/lib/core/config/firebase_config.dart';
+import '../core/config/firebase_config.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
@@ -18,8 +20,11 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       // Navigate to home screen or dashboard
     } catch (e) {
+      if (!mounted) {
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Login failed')),
+        const SnackBar(content: Text('Login failed')),
       );
     }
   }
@@ -27,7 +32,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Login')),
+      appBar: AppBar(title: const Text('Login')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -36,16 +41,16 @@ class _LoginScreenState extends State<LoginScreen> {
               controller: _emailController,
               decoration: InputDecoration(labelText: 'Email'),
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             TextField(
               controller: _passwordController,
               obscureText: true,
               decoration: InputDecoration(labelText: 'Password'),
             ),
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _login,
-              child: Text('Login'),
+              child: const Text('Login'),
             ),
           ],
         ),
