@@ -1,0 +1,52 @@
+name: Web Preview
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Build web preview
+        run: flutter build web --release
+
+      - name: Upload preview artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-preview
+          path: build/web
+
+      - name: Deploy preview channel (if Firebase secrets exist)
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          FIREBASE_PROJECT_ID_STAGING: ${{ secrets.FIREBASE_PROJECT_ID_STAGING }}
+        run: |
+          if [ -z "${FIREBASE_TOKEN}" ] || [ -z "${FIREBASE_PROJECT_ID_STAGING}" ]; then
+            echo "Skipping Firebase preview deploy: secrets missing."
+            exit 0
+          fi
+          firebase hosting:channel:deploy pr-${{ github.event.pull_request.number || 'manual' }} \
+            --project "${FIREBASE_PROJECT_ID_STAGING}" \
+            --token "${FIREBASE_TOKEN}" \
+            --expires 7d

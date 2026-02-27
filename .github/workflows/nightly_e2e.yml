@@ -1,0 +1,33 @@
+name: Nightly E2E Smoke
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  nightly-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Run unit and widget tests
+        run: flutter test test
+
+      - name: Run integration-like smoke test
+        run: flutter test test/smoke_integration_like_test.dart
+
+      - name: Run integration test placeholder
+        run: flutter test integration_test/smoke_test.dart
