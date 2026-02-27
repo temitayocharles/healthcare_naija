@@ -1,11 +1,11 @@
 {
-    "name": "nigeria_health_care",
-    "short_name": "nigeria_health_care",
+    "name": "CareRoviq",
+    "short_name": "CareRoviq",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "CareRoviq connects patients with trusted healthcare providers.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

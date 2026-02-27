@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "com.nigeriacare.nigeria_health_care"
+    namespace = "hcn.temitayocharles.online"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -22,7 +22,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.nigeriacare.nigeria_health_care"
+        applicationId = "hcn.temitayocharles.online"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

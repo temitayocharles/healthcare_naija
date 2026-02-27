@@ -1,4 +1,4 @@
-package com.example.nigeria_healthcare_app
+package hcn.temitayocharles.online
 
 import io.flutter.embedding.android.FlutterActivity
 
