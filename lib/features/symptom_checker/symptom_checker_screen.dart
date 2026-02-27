@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/services/ai_service.dart';
 import '../../core/providers/providers.dart';
 import '../../models/symptom_record.dart';
+import '../../widgets/sync_status_action.dart';
 
 class SymptomCheckerScreen extends ConsumerStatefulWidget {
   const SymptomCheckerScreen({super.key});
@@ -132,6 +132,7 @@ class _SymptomCheckerScreenState extends ConsumerState<SymptomCheckerScreen> {
       appBar: AppBar(
         title: const Text('AI Symptom Checker'),
         actions: [
+          const SyncStatusAction(),
           if (_selectedSymptoms.isNotEmpty || _analysisResult != null)
             IconButton(
               icon: const Icon(Icons.refresh),
@@ -148,7 +149,7 @@ class _SymptomCheckerScreenState extends ConsumerState<SymptomCheckerScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withOpacity(0.1),
+                color: AppTheme.primaryColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -276,7 +277,7 @@ class _SymptomCheckerScreenState extends ConsumerState<SymptomCheckerScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: _getSeverityColor(_analysisResult!['severity']).withOpacity(0.1),
+                  color: _getSeverityColor(_analysisResult!['severity']).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: _getSeverityColor(_analysisResult!['severity']),

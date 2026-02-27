@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
+import '../../widgets/sync_status_action.dart';
 
 class HealthRecordsScreen extends ConsumerWidget {
   const HealthRecordsScreen({super.key});
@@ -11,6 +12,7 @@ class HealthRecordsScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Health Records'),
         actions: [
+          const SyncStatusAction(),
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () {
@@ -29,7 +31,7 @@ class HealthRecordsScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.purple, Colors.purple.withOpacity(0.7)],
+                  colors: [Colors.purple, Colors.purple.withValues(alpha: 0.7)],
                 ),
                 borderRadius: BorderRadius.circular(16),
               ),

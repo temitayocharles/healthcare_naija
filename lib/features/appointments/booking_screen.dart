@@ -239,7 +239,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
               subtitle: const Text('Skip the queue for urgent care'),
               value: _isEmergency,
               onChanged: (value) => setState(() => _isEmergency = value),
-              activeColor: AppTheme.errorColor,
+              activeThumbColor: AppTheme.errorColor,
             ),
             const SizedBox(height: 24),
 

@@ -47,11 +47,15 @@ class SyncQueueService {
 
   final StorageService _storageService;
   final ConnectivityService _connectivityService;
+  final StreamController<int> _pendingCountController = StreamController<int>.broadcast();
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
   bool _isFlushing = false;
 
+  Stream<int> get pendingCountStream => _pendingCountController.stream;
+
   void initialize() {
     _connectivitySub?.cancel();
+    _emitPendingCount();
     _connectivitySub = _connectivityService.connectivityStream.listen((_) async {
       await flushQueue();
     });
@@ -131,6 +135,7 @@ class SyncQueueService {
   void dispose() {
     _connectivitySub?.cancel();
     _connectivitySub = null;
+    _pendingCountController.close();
   }
 
   List<SyncQueueOperation> _getQueue() {
@@ -145,6 +150,14 @@ class SyncQueueService {
       _queueKey,
       queue.map((op) => op.toJson()).toList(),
     );
+    _emitPendingCount();
+  }
+
+  void _emitPendingCount() {
+    if (_pendingCountController.isClosed) {
+      return;
+    }
+    _pendingCountController.add(_getQueue().length);
   }
 
   Future<bool> _trySync(SyncQueueOperation op) async {

@@ -4,6 +4,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/providers/providers.dart';
 import '../../models/provider.dart' as model;
+import '../../widgets/sync_status_action.dart';
 
 class ProviderSearchScreen extends ConsumerStatefulWidget {
   const ProviderSearchScreen({super.key});
@@ -85,6 +86,9 @@ class _ProviderSearchScreenState extends ConsumerState<ProviderSearchScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Find Providers'),
+        actions: const [
+          SyncStatusAction(),
+        ],
       ),
       body: Column(
         children: [
@@ -205,7 +209,7 @@ class _ProviderSearchScreenState extends ConsumerState<ProviderSearchScreen> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withOpacity(0.1),
+                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
@@ -409,7 +413,7 @@ class _ProviderCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withOpacity(0.1),
+                  color: AppTheme.primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(icon, color: AppTheme.primaryColor),

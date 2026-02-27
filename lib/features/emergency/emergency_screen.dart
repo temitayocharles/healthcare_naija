@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/constants/app_constants.dart';
+import '../../widgets/sync_status_action.dart';
 
 class EmergencyScreen extends ConsumerWidget {
   const EmergencyScreen({super.key});
@@ -20,6 +21,9 @@ class EmergencyScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Emergency Services'),
         backgroundColor: AppTheme.errorColor,
+        actions: const [
+          SyncStatusAction(),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -174,7 +178,7 @@ class _EmergencyCard extends StatelessWidget {
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppTheme.errorColor.withOpacity(0.1),
+            color: AppTheme.errorColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: const Icon(Icons.phone, color: AppTheme.errorColor),
@@ -209,7 +213,7 @@ class _QuickActionButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: onTap,
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
+        backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
         foregroundColor: AppTheme.primaryColor,
         padding: const EdgeInsets.symmetric(vertical: 16),
       ),

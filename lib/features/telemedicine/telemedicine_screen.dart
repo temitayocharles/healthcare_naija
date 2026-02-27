@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
+import '../../widgets/sync_status_action.dart';
 
 class TelemedicineScreen extends ConsumerWidget {
   const TelemedicineScreen({super.key});
@@ -10,6 +11,9 @@ class TelemedicineScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Telemedicine'),
+        actions: const [
+          SyncStatusAction(),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -21,7 +25,7 @@ class TelemedicineScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.blue, Colors.blue.withOpacity(0.7)],
+                  colors: [Colors.blue, Colors.blue.withValues(alpha: 0.7)],
                 ),
                 borderRadius: BorderRadius.circular(16),
               ),

@@ -30,6 +30,16 @@ final syncQueueServiceProvider = Provider<SyncQueueService>((ref) {
   return service;
 });
 
+final pendingSyncOperationsProvider = StreamProvider<int>((ref) {
+  final syncQueue = ref.watch(syncQueueServiceProvider);
+  return syncQueue.pendingCountStream;
+});
+
+final forceSyncProvider = FutureProvider<void>((ref) async {
+  final syncQueue = ref.watch(syncQueueServiceProvider);
+  await syncQueue.flushQueue();
+});
+
 // Repositories
 final userRepositoryProvider = Provider<UserRepository>((ref) {
   final storage = ref.watch(storageServiceProvider);
