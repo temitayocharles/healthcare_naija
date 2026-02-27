@@ -173,12 +173,14 @@ Behavior:
 Local staging deploy:
 
 ```bash
+source .env.firebase.local
 scripts/deploy_staging.sh
 ```
 
 Local production deploy:
 
 ```bash
+source .env.firebase.local
 scripts/deploy_production.sh
 ```
 
