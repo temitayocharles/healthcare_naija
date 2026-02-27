@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../models/provider.dart';
+import '../../models/provider.dart' as model;
 
 // Provider service for fetching and managing provider data
 class ProviderService {
@@ -8,9 +8,9 @@ class ProviderService {
   ProviderService(this.ref);
 
   // Sample providers data (in production, fetch from Firebase)
-  List<Provider> getSampleProviders() {
+  List<model.HealthcareProvider> getSampleProviders() {
     return [
-      Provider(
+      model.HealthcareProvider(
         id: '1',
         name: 'Dr. Adaeze Okonkwo',
         type: 'Physician',
@@ -35,7 +35,7 @@ class ProviderService {
         createdAt: DateTime.now(),
         isVerified: true,
       ),
-      Provider(
+      model.HealthcareProvider(
         id: '2',
         name: 'St. Mary\'s Pharmacy',
         type: 'Pharmacy',
@@ -55,7 +55,7 @@ class ProviderService {
         createdAt: DateTime.now(),
         isVerified: true,
       ),
-      Provider(
+      model.HealthcareProvider(
         id: '3',
         name: 'Nurse Amara Johnson',
         type: 'Nurse',
@@ -78,7 +78,7 @@ class ProviderService {
         createdAt: DateTime.now(),
         isVerified: true,
       ),
-      Provider(
+      model.HealthcareProvider(
         id: '4',
         name: 'Dr. Ibrahim Musa',
         type: 'Physician',
@@ -103,7 +103,7 @@ class ProviderService {
         createdAt: DateTime.now(),
         isVerified: true,
       ),
-      Provider(
+      model.HealthcareProvider(
         id: '5',
         name: 'Grace Caregiver Services',
         type: 'Caregiver',
@@ -125,7 +125,7 @@ class ProviderService {
         createdAt: DateTime.now(),
         isVerified: false,
       ),
-      Provider(
+      model.HealthcareProvider(
         id: '6',
         name: 'Dr. Folake Adeyemi',
         type: 'Physician',
@@ -150,7 +150,7 @@ class ProviderService {
         createdAt: DateTime.now(),
         isVerified: true,
       ),
-      Provider(
+      model.HealthcareProvider(
         id: '7',
         name: 'Life Guard Pharmacy',
         type: 'Pharmacy',
@@ -170,7 +170,7 @@ class ProviderService {
         createdAt: DateTime.now(),
         isVerified: true,
       ),
-      Provider(
+      model.HealthcareProvider(
         id: '8',
         name: 'Dr. Chukwuma Okeke',
         type: 'Physician',
@@ -199,12 +199,12 @@ class ProviderService {
   }
 
   // Get all providers
-  List<Provider> getAllProviders() {
+  List<model.HealthcareProvider> getAllProviders() {
     return getSampleProviders();
   }
 
   // Get provider by ID
-  Provider? getProviderById(String id) {
+  model.HealthcareProvider? getProviderById(String id) {
     try {
       return getSampleProviders().firstWhere((p) => p.id == id);
     } catch (e) {
@@ -213,7 +213,7 @@ class ProviderService {
   }
 
   // Filter providers
-  List<Provider> filterProviders({
+  List<model.HealthcareProvider> filterProviders({
     String? type,
     String? state,
     String? specialty,
@@ -251,7 +251,7 @@ class ProviderService {
   }
 
   // Search providers
-  List<Provider> searchProviders(String query) {
+  List<model.HealthcareProvider> searchProviders(String query) {
     final q = query.toLowerCase();
     return getSampleProviders().where((p) {
       return p.name.toLowerCase().contains(q) ||
@@ -263,13 +263,13 @@ class ProviderService {
   }
 
   // Get providers by type
-  List<Provider> getProvidersByType(String type) {
+  List<model.HealthcareProvider> getProvidersByType(String type) {
     return getSampleProviders().where((p) => p.type == type).toList();
   }
 
   // Get featured providers
-  List<Provider> getFeaturedProviders({int limit = 5}) {
-    final providers = List<Provider>.from(getSampleProviders());
+  List<model.HealthcareProvider> getFeaturedProviders({int limit = 5}) {
+    final providers = List<model.HealthcareProvider>.from(getSampleProviders());
     providers.sort((a, b) => b.rating.compareTo(a.rating));
     return providers.take(limit).toList();
   }

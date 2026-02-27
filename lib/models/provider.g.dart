@@ -1,9 +1,8 @@
-import 'package:hive/hive.dart';
-import 'provider.dart';
+// GENERATED CODE - DO NOT MODIFY BY HAND
 
-part 'provider.g.dart';
+part of 'provider.dart';
 
-class ProviderAdapter extends TypeAdapter<HealthcareProvider> {
+class HealthcareProviderAdapter extends TypeAdapter<HealthcareProvider> {
   @override
   final int typeId = 1;
 
@@ -104,7 +103,7 @@ class ProviderAdapter extends TypeAdapter<HealthcareProvider> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is ProviderAdapter &&
+      other is HealthcareProviderAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

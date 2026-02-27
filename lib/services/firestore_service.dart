@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/appointment.dart';
 import '../models/health_record.dart';
 import '../models/provider.dart';
 import '../models/symptom_record.dart';
@@ -48,5 +49,10 @@ class FirestoreService {
 
   static Future<void> createSymptomRecord(SymptomRecord symptomRecord) async {
     await _firestore.collection('symptom_records').add(symptomRecord.toJson());
+  }
+
+  // Appointments
+  static Future<void> upsertAppointment(Appointment appointment) async {
+    await _firestore.collection('appointments').doc(appointment.id).set(appointment.toJson());
   }
 }

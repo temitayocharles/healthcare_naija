@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../repositories/repositories.dart';
 import '../services/services.dart';
+import '../services/provider_service.dart';
 import '../../models/models.dart' as models;
 
 // Core services
@@ -17,6 +19,27 @@ final aiServiceProvider = Provider<AIService>((ref) {
 
 final locationServiceProvider = Provider<LocationService>((ref) {
   return LocationService();
+});
+
+final syncQueueServiceProvider = Provider<SyncQueueService>((ref) {
+  final storage = ref.watch(storageServiceProvider);
+  final connectivity = ref.watch(connectivityServiceProvider);
+  final service = SyncQueueService(storage, connectivity);
+  service.initialize();
+  ref.onDispose(service.dispose);
+  return service;
+});
+
+// Repositories
+final userRepositoryProvider = Provider<UserRepository>((ref) {
+  final storage = ref.watch(storageServiceProvider);
+  return UserRepositoryImpl(storage);
+});
+
+final providerRepositoryProvider = Provider<ProviderRepository>((ref) {
+  final providerService = ref.watch(providerServiceProvider);
+  final storage = ref.watch(storageServiceProvider);
+  return ProviderRepositoryImpl(providerService, storage);
 });
 
 // Connectivity state
@@ -44,43 +67,57 @@ class UserNotifier extends StateNotifier<models.User?> {
   }
 
   void _loadCachedUser() {
-    final storage = ref.read(storageServiceProvider);
-    state = storage.getCachedUser();
+    final userRepository = ref.read(userRepositoryProvider);
+    state = userRepository.getCurrentUser();
   }
 
   Future<void> setUser(models.User user) async {
-    final storage = ref.read(storageServiceProvider);
-    await storage.cacheUser(user);
+    final userRepository = ref.read(userRepositoryProvider);
+    await userRepository.saveCurrentUser(user);
+    await ref.read(syncQueueServiceProvider).enqueueUpsertUser(user);
     state = user;
   }
 
   Future<void> clearUser() async {
-    final storage = ref.read(storageServiceProvider);
-    await storage.clearUser();
+    final userRepository = ref.read(userRepositoryProvider);
+    await userRepository.clearCurrentUser();
     state = null;
   }
 }
 
 // Providers list
-final providersProvider = StateNotifierProvider<ProvidersNotifier, List<models.Provider>>((ref) {
+final providersProvider = StateNotifierProvider<ProvidersNotifier, List<models.HealthcareProvider>>((ref) {
   return ProvidersNotifier(ref);
 });
 
-class ProvidersNotifier extends StateNotifier<List<models.Provider>> {
+class ProvidersNotifier extends StateNotifier<List<models.HealthcareProvider>> {
   final Ref ref;
 
-  ProvidersNotifier(this.ref) : super([]);
+  ProvidersNotifier(this.ref) : super([]) {
+    loadProviders();
+  }
 
-  void setProviders(List<models.Provider> providers) {
+  Future<void> loadProviders({bool forceRefresh = false}) async {
+    final providerRepository = ref.read(providerRepositoryProvider);
+    state = await providerRepository.getProviders(forceRefresh: forceRefresh);
+  }
+
+  void setProviders(List<models.HealthcareProvider> providers) {
     state = providers;
   }
 
-  void addProvider(models.Provider provider) {
+  Future<void> addProvider(models.HealthcareProvider provider) async {
     state = [...state, provider];
+    final providerRepository = ref.read(providerRepositoryProvider);
+    await providerRepository.cacheProviders(state);
+    await ref.read(syncQueueServiceProvider).enqueueUpsertProvider(provider);
   }
 
-  void updateProvider(models.Provider provider) {
+  Future<void> updateProvider(models.HealthcareProvider provider) async {
     state = state.map((p) => p.id == provider.id ? provider : p).toList();
+    final providerRepository = ref.read(providerRepositoryProvider);
+    await providerRepository.cacheProviders(state);
+    await ref.read(syncQueueServiceProvider).enqueueUpsertProvider(provider);
   }
 }
 

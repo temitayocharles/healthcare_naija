@@ -10,7 +10,7 @@ class StorageService {
   static const String settingsBoxName = 'settings';
 
   late Box<User> _userBox;
-  late Box<Provider> _providersBox;
+  late Box<HealthcareProvider> _providersBox;
   late Box<Appointment> _appointmentsBox;
   late Box<SymptomRecord> _symptomsBox;
   late Box<HealthRecord> _healthRecordsBox;
@@ -21,14 +21,14 @@ class StorageService {
 
     // Register adapters
     Hive.registerAdapter(UserAdapter());
-    Hive.registerAdapter(ProviderAdapter());
+    Hive.registerAdapter(HealthcareProviderAdapter());
     Hive.registerAdapter(AppointmentAdapter());
     Hive.registerAdapter(SymptomRecordAdapter());
     Hive.registerAdapter(HealthRecordAdapter());
 
     // Open boxes
     _userBox = await Hive.openBox<User>(userBoxName);
-    _providersBox = await Hive.openBox<Provider>(providersBoxName);
+    _providersBox = await Hive.openBox<HealthcareProvider>(providersBoxName);
     _appointmentsBox = await Hive.openBox<Appointment>(appointmentsBoxName);
     _symptomsBox = await Hive.openBox<SymptomRecord>(symptomsBoxName);
     _healthRecordsBox = await Hive.openBox<HealthRecord>(healthRecordsBoxName);
@@ -49,18 +49,18 @@ class StorageService {
   }
 
   // Provider methods
-  Future<void> cacheProviders(List<Provider> providers) async {
+  Future<void> cacheProviders(List<HealthcareProvider> providers) async {
     await _providersBox.clear();
     for (var provider in providers) {
       await _providersBox.put(provider.id, provider);
     }
   }
 
-  List<Provider> getCachedProviders() {
+  List<HealthcareProvider> getCachedProviders() {
     return _providersBox.values.toList();
   }
 
-  Provider? getProvider(String id) {
+  HealthcareProvider? getProvider(String id) {
     return _providersBox.get(id);
   }
 

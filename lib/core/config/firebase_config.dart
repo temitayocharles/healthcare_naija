@@ -45,4 +45,22 @@ class FirebaseConfig {
 
   // Messaging instance
   static FirebaseMessaging get messaging => FirebaseMessaging.instance;
+
+  static Future<UserCredential> signInWithEmailAndPassword(
+    String email,
+    String password,
+  ) {
+    return auth.signInWithEmailAndPassword(email: email, password: password);
+  }
+
+  static Future<UserCredential> createUserWithEmailAndPassword(
+    String email,
+    String password,
+  ) {
+    return auth.createUserWithEmailAndPassword(email: email, password: password);
+  }
+
+  static Future<void> signOut() {
+    return auth.signOut();
+  }
 }

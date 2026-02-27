@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/providers/providers.dart';
 import '../../models/provider.dart' as model;
 
 class ProviderSearchScreen extends ConsumerStatefulWidget {
@@ -17,127 +18,8 @@ class _ProviderSearchScreenState extends ConsumerState<ProviderSearchScreen> {
   String? _selectedState;
   String _sortBy = 'rating';
 
-  // Sample providers data (replace with Firebase data)
-  final List<model.Provider> _sampleProviders = [
-    model.Provider(
-      id: '1',
-      name: 'Dr. Adaeze Okonkwo',
-      type: 'Physician',
-      specialty: 'General Practice',
-      description: 'Experienced general practitioner with 10+ years of experience.',
-      phone: '08012345678',
-      email: 'adaeze@example.com',
-      state: 'Lagos',
-      lga: 'Ikoyi',
-      address: '15 Adeola Odeku Street, Ikoyi',
-      latitude: 6.4281,
-      longitude: 3.4219,
-      rating: 4.8,
-      reviewCount: 124,
-      priceMin: 5000,
-      priceMax: 15000,
-      isAvailable: true,
-      workingDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-      workingHours: '9:00 AM - 5:00 PM',
-      services: ['General Consultation', 'Health Check', 'Vaccination'],
-      acceptedInsurance: ['AXA', 'Leadway', 'AIICO'],
-      createdAt: DateTime.now(),
-      isVerified: true,
-    ),
-    model.Provider(
-      id: '2',
-      name: 'St. Mary\'s Pharmacy',
-      type: 'Pharmacy',
-      description: '24/7 pharmacy with home delivery available.',
-      phone: '08023456789',
-      state: 'Lagos',
-      lga: 'Victoria Island',
-      address: '25 Ozumba Mbadiwe Avenue',
-      latitude: 6.4281,
-      longitude: 3.4219,
-      rating: 4.5,
-      reviewCount: 89,
-      isAvailable: true,
-      workingDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-      workingHours: '24 Hours',
-      services: ['Medicine Dispensing', 'Home Delivery', 'Health Advice'],
-      createdAt: DateTime.now(),
-      isVerified: true,
-    ),
-    model.Provider(
-      id: '3',
-      name: 'Nurse Amara Johnson',
-      type: 'Nurse',
-      specialty: 'Home Care',
-      description: 'Professional nurse offering home nursing services.',
-      phone: '08034567890',
-      state: 'Abuja',
-      lga: 'Gwagwalada',
-      address: 'Zone 5, Gwagwalada',
-      latitude: 8.9833,
-      longitude: 7.1667,
-      rating: 4.7,
-      reviewCount: 56,
-      priceMin: 3000,
-      priceMax: 8000,
-      isAvailable: true,
-      workingDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-      workingHours: '8:00 AM - 6:00 PM',
-      services: ['Home Nursing', 'Wound Care', 'Elderly Care'],
-      createdAt: DateTime.now(),
-      isVerified: true,
-    ),
-    model.Provider(
-      id: '4',
-      name: 'Dr. Ibrahim Musa',
-      type: 'Physician',
-      specialty: 'Cardiology',
-      description: 'Board-certified cardiologist specializing in heart conditions.',
-      phone: '08045678901',
-      email: 'ibrahim@example.com',
-      state: 'Kano',
-      lga: 'Kano Municipal',
-      address: '42 Ali Akilu Road',
-      latitude: 12.0022,
-      longitude: 8.5919,
-      rating: 4.9,
-      reviewCount: 203,
-      priceMin: 10000,
-      priceMax: 50000,
-      isAvailable: true,
-      workingDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-      workingHours: '9:00 AM - 4:00 PM',
-      services: ['Cardiac Consultation', 'ECG', 'Heart Screening'],
-      acceptedInsurance: ['NHS', 'Alliance'],
-      createdAt: DateTime.now(),
-      isVerified: true,
-    ),
-    model.Provider(
-      id: '5',
-      name: 'Grace Caregiver Services',
-      type: 'Caregiver',
-      description: 'Professional caregivers for elderly and disabled care.',
-      phone: '08056789012',
-      state: 'Rivers',
-      lga: 'Port Harcourt',
-      address: '20 Woji Road, GRA',
-      latitude: 4.7774,
-      longitude: 7.0134,
-      rating: 4.6,
-      reviewCount: 45,
-      priceMin: 2000,
-      priceMax: 5000,
-      isAvailable: true,
-      workingDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-      workingHours: '24 Hours',
-      services: ['Elderly Care', 'Patient Assistance', 'Companionship'],
-      createdAt: DateTime.now(),
-      isVerified: false,
-    ),
-  ];
-
-  List<model.Provider> get _filteredProviders {
-    var providers = _sampleProviders.where((p) {
+  List<model.Provider> _filteredProviders(List<model.Provider> sourceProviders) {
+    var providers = sourceProviders.where((p) {
       // Filter by search query
       if (_searchQuery.isNotEmpty) {
         final query = _searchQuery.toLowerCase();
@@ -197,6 +79,9 @@ class _ProviderSearchScreenState extends ConsumerState<ProviderSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final providers = ref.watch(providersProvider);
+    final filteredProviders = _filteredProviders(providers);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Find Providers'),
@@ -267,7 +152,7 @@ class _ProviderSearchScreenState extends ConsumerState<ProviderSearchScreen> {
             child: Row(
               children: [
                 Text(
-                  '${_filteredProviders.length} providers found',
+                  '${filteredProviders.length} providers found',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Colors.grey[600],
                   ),
@@ -280,9 +165,9 @@ class _ProviderSearchScreenState extends ConsumerState<ProviderSearchScreen> {
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: _filteredProviders.length,
+              itemCount: filteredProviders.length,
               itemBuilder: (context, index) {
-                final provider = _filteredProviders[index];
+                final provider = filteredProviders[index];
                 return _ProviderCard(
                   provider: provider,
                   icon: _getProviderIcon(provider.type),

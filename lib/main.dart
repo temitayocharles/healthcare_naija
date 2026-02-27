@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app.dart';
+import 'core/providers/providers.dart';
 import 'core/services/storage_service.dart';
 
 void main() async {
@@ -13,7 +14,7 @@ void main() async {
   runApp(
     ProviderScope(
       overrides: [
-        // Override storage service with initialized instance
+        storageServiceProvider.overrideWithValue(storageService),
       ],
       child: NigeriaHealthCareApp(),
     ),

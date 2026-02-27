@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/user.dart';
-import 'storage_service.dart';
+import '../providers/providers.dart';
 
 class AuthService {
   final Ref ref;

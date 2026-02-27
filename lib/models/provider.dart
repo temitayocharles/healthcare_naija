@@ -79,7 +79,7 @@ class HealthcareProvider {
   @HiveField(24)
   final String? licenseNumber;
 
-  Provider({
+  HealthcareProvider({
     required this.id,
     required this.name,
     required this.type,
@@ -230,3 +230,5 @@ class HealthcareProvider {
     );
   }
 }
+
+typedef Provider = HealthcareProvider;

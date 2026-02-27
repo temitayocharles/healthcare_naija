@@ -1,18 +1,18 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:uuid/uuid.dart';
 import '../../models/appointment.dart';
-import '../../models/provider.dart';
-import 'storage_service.dart';
+import '../../models/provider.dart' as model;
+import '../providers/providers.dart';
 
 class AppointmentService {
-  final Ref ref;
+  final riverpod.Ref ref;
 
   AppointmentService(this.ref);
 
   // Book an appointment
   Future<Appointment> bookAppointment({
     required String patientId,
-    required Provider provider,
+    required model.HealthcareProvider provider,
     required DateTime dateTime,
     String? notes,
     String? symptoms,
@@ -38,6 +38,7 @@ class AppointmentService {
     final storage = ref.read(storageServiceProvider);
     final existing = storage.getCachedAppointments();
     await storage.cacheAppointments([...existing, appointment]);
+    await ref.read(syncQueueServiceProvider).enqueueUpsertAppointment(appointment);
 
     return appointment;
   }
@@ -85,6 +86,7 @@ class AppointmentService {
     appointments[index] = updated;
 
     await storage.cacheAppointments(appointments);
+    await ref.read(syncQueueServiceProvider).enqueueUpsertAppointment(updated);
     return updated;
   }
 
@@ -106,6 +108,7 @@ class AppointmentService {
     appointments[index] = updated;
 
     await storage.cacheAppointments(appointments);
+    await ref.read(syncQueueServiceProvider).enqueueUpsertAppointment(updated);
     return updated;
   }
 
@@ -120,6 +123,6 @@ class AppointmentService {
   }
 }
 
-final appointmentServiceProvider = Provider<AppointmentService>((ref) {
+final appointmentServiceProvider = riverpod.Provider<AppointmentService>((ref) {
   return AppointmentService(ref);
 });
