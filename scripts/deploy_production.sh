@@ -6,7 +6,7 @@ if ! command -v firebase >/dev/null 2>&1; then
   exit 1
 fi
 
-PROJECT_ID="${FIREBASE_PROJECT_ID_PRODUCTION:-nigeria-health-care}"
+PROJECT_ID="${FIREBASE_PROJECT_ID_PRODUCTION:-healthcare-naija}"
 
 flutter pub get
 flutter analyze

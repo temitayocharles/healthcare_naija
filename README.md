@@ -135,6 +135,14 @@ flutter test
 
 ## Firebase Configuration
 
+### iOS
+
+1. Download `GoogleService-Info.plist` from Firebase Console for the iOS app.
+2. Place it at `ios/Runner/GoogleService-Info.plist`.
+3. Ensure your iOS bundle ID in Xcode matches Firebase app bundle ID.
+
+### Web
+
 For web builds, provide Firebase values via `--dart-define`:
 
 ```bash
@@ -146,7 +154,18 @@ flutter run -d chrome \
   --dart-define=FIREBASE_STORAGE_BUCKET=...
 ```
 
+Quick start with env file:
+
+```bash
+source .env.firebase.local
+scripts/run_web_with_firebase.sh
+```
+
 If Firebase is not configured in the runtime environment, protected Firebase-backed features may not function.
+
+Notes:
+- Firebase Web API keys are not secrets, but must be restricted in Google Cloud (HTTP referrers, API scope).
+- AI provider keys (example `OPENAI_API_KEY`) are secrets and must not be committed.
 
 ## Deployment
 

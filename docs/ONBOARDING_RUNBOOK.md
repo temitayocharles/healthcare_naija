@@ -94,6 +94,37 @@ AI token is **not auto-generated** for external providers. If using external AI 
 
 If no external key is provided, keep AI features in local/mock/fallback mode.
 
+## 4.5 Firebase App Credentials (iOS + Web)
+
+Use your Firebase project values:
+
+- Project ID: `healthcare-naija`
+- Storage bucket: `healthcare-naija.firebasestorage.app`
+- Web `appId`: format `1:<sender-id>:web:<hash>`
+- iOS `GoogleService-Info.plist` from Firebase Console
+
+iOS setup:
+
+1. Download `GoogleService-Info.plist` from Firebase Console (iOS app).
+2. Place file at `ios/Runner/GoogleService-Info.plist`.
+3. Confirm iOS bundle ID in Xcode equals Firebase iOS bundle ID.
+
+Web setup:
+
+1. Copy `.env.firebase.example` to `.env.firebase.local`.
+2. Fill your real Firebase values.
+3. Source and run:
+
+```bash
+source .env.firebase.local
+scripts/run_web_with_firebase.sh
+```
+
+Important:
+
+- Firebase Web API keys are public identifiers; enforce restrictions in Google Cloud.
+- `FIREBASE_TOKEN` (for deploy) and AI keys are secrets; keep in shell/CI secrets only.
+
 ## 5. Deploy Commands
 
 Local staging deploy:

@@ -12,9 +12,9 @@
 Each environment must use separate Firebase config and credentials.
 
 ## Firebase Project Mapping
-- default: `nigeria-health-care`
-- staging alias: `nigeria-health-care-staging`
-- production alias: `nigeria-health-care`
+- default: `healthcare-naija`
+- staging alias: `healthcare-naija-staging`
+- production alias: `healthcare-naija`
 
 ## GitHub Actions Secrets
 Required repository/environment secrets:
