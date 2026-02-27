@@ -127,6 +127,8 @@ A comprehensive healthcare application for Nigeria with AI-powered symptom diagn
 **Status Date:** 2026-02-27  
 **Maturity Stage:** Prototype moving toward MVP-ready
 
+For environment setup, tokens, deployment, and engineer handoff, see `docs/ONBOARDING_RUNBOOK.md`.
+
 ### Goal
 Ship a stable MVP foundation for Nigeria healthcare workflows:
 - identity and auth
