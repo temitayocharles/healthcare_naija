@@ -1,248 +1,209 @@
 # Nigeria Health Care App
 
-## Project Overview
+Nigeria Health Care App is a Flutter-based digital healthcare platform for Nigeria, built for multi-platform delivery (Android, iOS, Web, Desktop baseline).
 
-A comprehensive healthcare application for Nigeria with AI-powered symptom diagnosis and nationwide care provider search. This is a 3-tier SaaS application with the following key features:
+The app combines:
+- Patient onboarding and authentication
+- Provider discovery
+- Appointment booking and management
+- Health record upload and sharing
+- Symptom triage support
+- Offline-first synchronization
+- Patient-caregiver chat with guarded attachments
 
-- AI-powered symptom diagnosis
-- Search for physicians, nurses, caregivers, pharmacies nationwide
-- Appointment booking
-- Telemedicine (video consultations)
-- Digital health records
-- Offline mode support
-- Provider dashboard
+## Tech Stack
 
-## Technology Stack
+- Flutter + Dart
+- Riverpod (state management)
+- Firebase Auth
+- Firestore
+- Firebase Storage
+- Hive (offline/local persistence)
+- Go Router (navigation)
 
-- **Frontend**: Flutter 3.x (Dart)
-- **Backend**: Firebase (Auth, Firestore, Cloud Functions)
-- **AI**: Hybrid (Local + External APIs)
-- **State Management**: Riverpod
-- **Offline Support**: Hive + SharedPreferences
+## Core Features
 
----
+- Authentication:
+  - Email sign in and registration
+  - Guest continuation mode
+  - Session state handling in app routing
 
-## Project Progress
+- Provider discovery:
+  - Search, filter, and sort providers
+  - Provider details and booking entrypoint
 
-### Phase 1: Core Infrastructure
+- Appointments:
+  - Create booking from provider flow
+  - View upcoming/past/cancelled appointments
+  - Cancel pending appointments
 
-| Task | Status | Notes |
-|------|--------|-------|
-| Project Setup | ✅ Complete | Flutter project initialized |
-| Dependencies Configuration | 🔄 In Progress | pubspec.yaml configured |
-| Directory Structure | 🔄 In Progress | Core, features, models, widgets |
-| Theme & Constants | 🔄 In Progress | App theme, colors, constants |
-| Data Models | 🔄 In Progress | User, Provider, Appointment, SymptomRecord |
+- Health records:
+  - Upload file with guardrails (type/size checks)
+  - Persist metadata to Firestore
+  - Optional caregiver-share metadata
 
-### Phase 2: Authentication
+- Chat:
+  - Patient-caregiver messaging
+  - Attachment upload with guardrails
 
-| Task | Status | Notes |
-|------|--------|-------|
-| Firebase Setup | ⬜ Pending | Auth, Firestore config |
-| Phone Auth | ⬜ Pending | Nigerian phone numbers |
-| Email Auth | ⬜ Pending | Fallback authentication |
-| User Roles | ⬜ Pending | Patient, Physician, Nurse, etc. |
-| Profile Management | ⬜ Pending | Profile editing, verification |
-
-### Phase 3: AI Symptom Diagnosis
-
-| Task | Status | Notes |
-|------|--------|-------|
-| Symptom Input UI | ⬜ Pending | Text input, symptom selection |
-| Local AI Engine | ⬜ Pending | On-device symptom matching |
-| External AI Integration | ⬜ Pending | OpenAI/Anthropic API |
-| Severity Assessment | ⬜ Pending | Emergency, Urgent, Normal |
-| Diagnosis History | ⬜ Pending | Save and view past diagnoses |
-
-### Phase 4: Provider Search
-
-| Task | Status | Notes |
-|------|--------|-------|
-| Provider Listing | ⬜ Pending | List view with filters |
-| Map Integration | ⬜ Pending | Google Maps for location |
-| Search & Filters | ⬜ Pending | By type, specialty, rating |
-| Provider Details | ⬜ Pending | Full profile page |
-| Reviews & Ratings | ⬜ Pending | User feedback system |
-
-### Phase 5: Appointments
-
-| Task | Status | Notes |
-|------|--------|-------|
-| Booking Flow | ⬜ Pending | Schedule appointments |
-| Appointment Management | ⬜ Pending | View, cancel, reschedule |
-| Notifications | ⬜ Pending | SMS/Email alerts |
-| Calendar Integration | ⬜ Pending | Provider availability |
-
-### Phase 6: Telemedicine
-
-| Task | Status | Notes |
-|------|--------|-------|
-| Video Call UI | ⬜ Pending | Video consultation interface |
-| WebRTC Integration | ⬜ Pending | Real-time video/audio |
-| Call Controls | ⬜ Pending | Mute, camera, end call |
-| Waiting Room | ⬜ Pending | Patient waiting area |
-
-### Phase 7: Health Records
-
-| Task | Status | Notes |
-|------|--------|-------|
-| Records Storage | ⬜ Pending | Upload medical documents |
-| Lab Results | ⬜ Pending | View and share lab results |
-| Prescription History | ⬜ Pending | Past prescriptions |
-| Sharing | ⬜ Pending | Share with providers |
-
-### Phase 8: Offline Mode
-
-| Task | Status | Notes |
-|------|--------|-------|
-| Local Caching | ⬜ Pending | Cache providers, appointments |
-| Offline Symptom Check | ⬜ Pending | AI works offline |
-| Sync Mechanism | ⬜ Pending | Sync when online |
-| Connectivity Detection | ⬜ Pending | Network status handling |
-
-### Phase 9: Provider Dashboard
-
-| Task | Status | Notes |
-|------|--------|-------|
-| Patient List | ⬜ Pending | Manage patients |
-| Appointments View | ⬜ Pending | Today's schedule |
-| Availability Settings | ⬜ Pending | Set working hours |
-| Analytics | ⬜ Pending | Reviews, ratings, earnings |
-
-### Phase 10: Polish & Launch
-
-| Task | Status | Notes |
-|------|--------|-------|
-| UI/UX Refinement | ⬜ Pending | Final design improvements |
-| Performance | ⬜ Pending | Optimize for speed |
-| Testing | ⬜ Pending | Unit & integration tests |
-| iOS Build | ⬜ Pending | Build for iOS |
-| Android Build | ⬜ Pending | Build for Android |
-| Web Build | ⬜ Pending | Build for Web |
-
----
-
-## Current Checkpoint
-
-**Status Date:** 2026-02-27  
-**Maturity Stage:** Prototype moving toward MVP-ready
-
-For environment setup, tokens, deployment, and engineer handoff, see `docs/ONBOARDING_RUNBOOK.md`.
-
-### Goal
-Ship a stable MVP foundation for Nigeria healthcare workflows:
-- identity and auth
-- provider discovery
-- appointment and health-record data flows
-- Firebase-backed sync with offline support
-
-### What Is At Stake
-- Incorrect model/schema changes can corrupt persisted Hive data and break app-layer wiring.
-- Inconsistent naming (`Provider` vs `HealthcareProvider`) can collide with Riverpod types and create widespread compile errors.
-- Dependency drift in `pubspec.yaml` can block `flutter pub get`, `flutter analyze`, and build automation.
-
-### What Has Been Done
-- Flutter project root and platform scaffolding were restored.
-- Core dependencies for Firebase, Riverpod, Hive, and code generation were re-added.
-- Type wiring was stabilized for key models/services (`HealthcareProvider`, auth/firestore/messaging integration points).
-- CI-local quality gate was re-run and reached a clean `flutter analyze` state before later dependency drift.
-- Branch divergence/conflicts with `origin/main` were resolved and pushed.
-
-### Current Risks / Gaps
-- `dev_dependencies` currently include `analyzer: ^10.2.0`, which conflicts with Flutter SDK-pinned `flutter_test`/`meta` and blocks dependency resolution.
-- Some model and architecture areas still need explicit verification against product requirements (not only compile status).
-- Feature modules are scaffolded but still require end-to-end wiring and tests.
-
-### Immediate Next Steps
-1. Fix dependency resolution by removing/pinning incompatible `analyzer` in `pubspec.yaml`.
-2. Run `flutter pub get`, `flutter analyze`, and `dart run build_runner build --delete-conflicting-outputs`.
-3. Verify model constructors/JSON/Hive adapters are consistent (`Provider` constructor naming, generated parts, adapter registration).
-4. Validate provider-layer wiring in `lib/core/providers/providers.dart` and service injection boundaries.
-5. Add smoke tests for auth, provider fetch, and appointment creation flow.
-6. Document environment setup (Firebase config, required `.env`/keys) in onboarding notes.
-7. Define MVP acceptance criteria and freeze schema-changing model edits until tests are in place.
-
----
+- Offline-first:
+  - Local cache via Hive
+  - Sync queue with retry/dedupe/dead-letter metrics
+  - Sync status badge + diagnostics screen
 
 ## Architecture
 
-```
+High-level flow:
+
+`UI -> Riverpod Providers -> Repositories -> Local/Remote Data Sources -> Hive/Firebase`
+
+Important boundaries:
+- UI does not call Firestore/Hive directly.
+- Repositories own online/offline behavior.
+- Sync queue handles deferred writes and replay.
+
+## Project Structure
+
+```text
 lib/
-├── main.dart                 # App entry point
-├── app.dart                  # App configuration
-├── core/
-│   ├── constants/            # App constants
-│   ├── theme/                # Theme configuration
-│   ├── utils/                # Utility functions
-│   └── services/             # Core services
-├── features/
-│   ├── auth/                # Authentication
-│   ├── home/                # Home/Dashboard
-│   ├── symptom_checker/      # AI Diagnosis
-│   ├── provider_search/     # Provider search
-│   ├── appointments/         # Booking system
-│   ├── profile/             # User profile
-│   ├── emergency/            # Emergency services
-│   ├── telemedicine/        # Video consultations
-│   └── health_records/      # Medical records
-├── models/                   # Data models
-└── widgets/                  # Reusable widgets
+  app.dart
+  main.dart
+  core/
+    config/
+    constants/
+    datasources/
+      local/
+      remote/
+    errors/
+    providers/
+    repositories/
+    result/
+    services/
+    theme/
+    utils/
+  features/
+    auth/
+    home/
+    provider_search/
+    appointments/
+    health_records/
+    symptom_checker/
+    chat/
+    profile/
+    emergency/
+    telemedicine/
+  models/
+  services/
+  widgets/
 ```
 
----
+## Getting Started
 
-## Build Commands
+### 1. Prerequisites
+
+Install:
+- Flutter stable SDK
+- Node.js 20+
+- Firebase CLI (`npm i -g firebase-tools`)
+
+Verify:
 
 ```bash
-# Install dependencies
-flutter pub get
-
-# Run on iOS Simulator
-flutter run -d "iPhone 16"
-
-# Build iOS
-flutter build ios --simulator
-
-# Build Android
-flutter build apk
-
-# Build Web
-flutter build web
+flutter --version
+flutter doctor
+firebase --version
 ```
 
----
+### 2. Install Dependencies
 
-## Milestones
+```bash
+flutter pub get
+```
 
-### Milestone 1: MVP (Week 1-2)
-- Authentication (Phone + Email)
-- AI Symptom Checker
-- Provider Search
-- Basic Booking
+### 3. Run Locally
 
-### Milestone 2: Enhanced Features (Week 3-4)
-- Telemedicine
-- Health Records
-- Offline Mode
+```bash
+flutter run -d chrome
+```
 
-### Milestone 3: Provider Tools (Week 5-6)
-- Provider Dashboard
-- Analytics
-- Reviews System
+### 4. Quality Checks
 
-### Milestone 4: Launch Ready (Week 7-8)
-- Polish & Testing
-- All platform builds
-- Documentation
+```bash
+flutter analyze
+flutter test
+```
 
----
+## Firebase Configuration
 
-## Contributing
+For web builds, provide Firebase values via `--dart-define`:
 
-This is an open-source project for Nigeria's healthcare. Contributions are welcome!
+```bash
+flutter run -d chrome \
+  --dart-define=FIREBASE_API_KEY=... \
+  --dart-define=FIREBASE_APP_ID=... \
+  --dart-define=FIREBASE_MESSAGING_SENDER_ID=... \
+  --dart-define=FIREBASE_PROJECT_ID=... \
+  --dart-define=FIREBASE_STORAGE_BUCKET=...
+```
 
----
+If Firebase is not configured in the runtime environment, protected Firebase-backed features may not function.
+
+## Deployment
+
+### Local script deploys
+
+Staging:
+
+```bash
+scripts/deploy_staging.sh
+```
+
+Production:
+
+```bash
+scripts/deploy_production.sh
+```
+
+### GitHub Actions deploys
+
+- `.github/workflows/deploy_staging.yml`
+- `.github/workflows/deploy_production.yml`
+
+Required secrets:
+- `FIREBASE_TOKEN`
+- `FIREBASE_PROJECT_ID_STAGING`
+- `FIREBASE_PROJECT_ID_PRODUCTION`
+
+## Security Baseline
+
+- Firestore rules with per-collection schema/role checks
+- Storage rules with owner-scoped upload paths
+- Upload guardrails:
+  - Allowed types: `jpg`, `jpeg`, `png`, `pdf`
+  - Max size: `10MB`
+- No destructive public write paths by default
+
+Security artifacts:
+- `firestore.rules`
+- `firestore.indexes.json`
+- `storage.rules`
+
+## Assets
+
+Primary UI visuals are in:
+- `assets/images/`
+
+These include hero/banner/profile/provider placeholders wired into key screens.
+
+## Documentation
+
+See `docs/` for operational and delivery documentation, including:
+- onboarding runbook
+- environment setup
+- security baseline
+- testing plan
+- release signoff docs
 
 ## License
 
-Open Source - MIT License
+MIT
