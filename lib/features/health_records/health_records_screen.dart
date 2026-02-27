@@ -205,8 +205,9 @@ class _HealthRecordsScreenState extends ConsumerState<HealthRecordsScreen> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.purple, Colors.purple.withValues(alpha: 0.7)],
+                  image: const DecorationImage(
+                    image: AssetImage('assets/images/records_banner.jpg'),
+                    fit: BoxFit.cover,
                   ),
                   borderRadius: BorderRadius.circular(16),
                 ),

@@ -208,16 +208,27 @@ class _ProviderSearchScreenState extends ConsumerState<ProviderSearchScreen> {
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(16),
+                    width: 72,
+                    height: 72,
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
+                      image: provider.profileImageUrl != null
+                          ? DecorationImage(
+                              image: provider.profileImageUrl!.startsWith('assets/')
+                                  ? AssetImage(provider.profileImageUrl!) as ImageProvider
+                                  : NetworkImage(provider.profileImageUrl!),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
+                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
                     ),
-                    child: Icon(
-                      _getProviderIcon(provider.type),
-                      size: 32,
-                      color: AppTheme.primaryColor,
-                    ),
+                    child: provider.profileImageUrl == null
+                        ? Icon(
+                            _getProviderIcon(provider.type),
+                            size: 32,
+                            color: AppTheme.primaryColor,
+                          )
+                        : null,
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -412,12 +423,23 @@ class _ProviderCard extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                width: 52,
+                height: 52,
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
+                  image: provider.profileImageUrl != null
+                      ? DecorationImage(
+                          image: provider.profileImageUrl!.startsWith('assets/')
+                              ? AssetImage(provider.profileImageUrl!) as ImageProvider
+                              : NetworkImage(provider.profileImageUrl!),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
+                  color: AppTheme.primaryColor.withValues(alpha: 0.1),
                 ),
-                child: Icon(icon, color: AppTheme.primaryColor),
+                child: provider.profileImageUrl == null
+                    ? Icon(icon, color: AppTheme.primaryColor)
+                    : null,
               ),
               const SizedBox(width: 16),
               Expanded(

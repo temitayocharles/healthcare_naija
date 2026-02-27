@@ -138,6 +138,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       ),
       body: Column(
         children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+              child: Image.asset(
+                'assets/images/chat_banner.jpg',
+                height: 120,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.all(12),
             child: TextField(
@@ -153,8 +165,20 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             child: messagesAsync.when(
               data: (messages) {
                 if (messages.isEmpty) {
-                  return const Center(
-                    child: Text('No messages yet. Start the conversation.'),
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.asset(
+                          'assets/images/chat_banner.jpg',
+                          height: 120,
+                          width: 180,
+                          fit: BoxFit.cover,
+                        ),
+                        const SizedBox(height: 12),
+                        const Text('No messages yet. Start the conversation.'),
+                      ],
+                    ),
                   );
                 }
                 return ListView.builder(
