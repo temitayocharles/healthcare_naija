@@ -149,7 +149,7 @@ flutter test
 3. Ensure your iOS bundle ID in Xcode matches Firebase app bundle ID.
 
 Current iOS bundle ID in this repo:
-`com.nigeriacare.nigeriaHealthCare`
+`hcn.temitayocharles.online`
 
 ### Web
 

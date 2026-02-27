@@ -127,7 +127,7 @@ iOS setup:
 3. Confirm iOS bundle ID in Xcode equals Firebase iOS bundle ID.
 
 Current iOS bundle ID in repo:
-`com.nigeriacare.nigeriaHealthCare`
+`hcn.temitayocharles.online`
 
 Web setup:
 

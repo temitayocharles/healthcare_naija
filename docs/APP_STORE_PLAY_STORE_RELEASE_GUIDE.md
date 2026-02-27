@@ -4,7 +4,7 @@ This runbook explains exactly how to publish this app for end users.
 
 Current app identifiers in this repo:
 - Android package name: `com.nigeriacare.nigeria_health_care`
-- iOS bundle ID: `com.nigeriacare.nigeriaHealthCare`
+- iOS bundle ID: `hcn.temitayocharles.online`
 - Flutter app version source: `pubspec.yaml` (`version: x.y.z+buildNumber`)
 
 ## 1. Pre-Release Checklist (Required)
@@ -77,7 +77,7 @@ Recommended release path:
 ## 4.1 One-time setup
 
 1. Apple Developer account active.
-2. App ID and bundle ID exist: `com.nigeriacare.nigeriaHealthCare`.
+2. App ID and bundle ID exist: `hcn.temitayocharles.online`.
 3. App record created in App Store Connect.
 4. Certificates/profiles configured in Xcode Signing.
 5. `ios/Runner/GoogleService-Info.plist` is added.
