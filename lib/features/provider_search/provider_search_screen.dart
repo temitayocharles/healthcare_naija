@@ -132,7 +132,7 @@ class _ProviderSearchScreenState extends ConsumerState<ProviderSearchScreen> {
                       _FilterDropdown(
                         value: _selectedState,
                         hint: 'State',
-                        items: AppConstants.nigerianStates.take(10).toList(),
+                        items: AppConstants.nigerianStates,
                         onChanged: (v) => setState(() => _selectedState = v),
                       ),
                       const SizedBox(width: 8),

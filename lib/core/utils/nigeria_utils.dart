@@ -2,7 +2,7 @@ class NigeriaUtils {
   // Nigerian states with major cities
   static const Map<String, List<String>> statesAndLGAs = {
     'Lagos': ['Alimosho', 'Ajeromi-Ifelodun', 'Kosofe', 'Mushin', 'Oshodi-Isolo', 'Ikeja', 'Surulere', 'Apapa', 'Lagos Island', 'Lagos Mainland', 'Eti-Osa', 'Ojo', 'Badagry', 'Ikorodu', 'Epe', 'Ibeju-Lekki'],
-    'Abuja': ['Abaji', 'Abuja Municipal', 'Gwagwalada', 'Kuje', 'Kwali', 'Bwari'],
+    'FCT': ['Abaji', 'Abuja Municipal', 'Gwagwalada', 'Kuje', 'Kwali', 'Bwari'],
     'Oyo': ['Ibadan North', 'Ibadan North-East', 'Ibadan South-West', 'Ibadan South-East', 'Oyo', 'Ogbomoso North', 'Ogbomoso South', 'Saki East', 'Saki West', 'Iseyin', 'Kishi'],
     'Rivers': ['Port Harcourt', 'Obio-Akpor', 'Okrika', 'Ogu-Bolo', 'Eleme', 'Tai', 'Gokana', 'Khana', 'Oyigbo', 'Afam', 'Etche', 'Omuma'],
     'Delta': ['Warri', 'Uvwie', 'Udu', 'Okpe', 'Sapele', 'Ethiope West', 'Ethiope East', 'Ika North-East', 'Ika South-West', 'Ndokwa West', 'Ndokwa East', 'Aniocha South', 'Aniocha North', 'Oshimili North', 'Oshimili South'],
@@ -20,7 +20,10 @@ class NigeriaUtils {
 
   // Get LGAs for a state
   static List<String> getLGAs(String state) {
-    return statesAndLGAs[state] ?? [];
+    if (statesAndLGAs.containsKey(state)) {
+      return statesAndLGAs[state]!;
+    }
+    return ['All LGAs'];
   }
 
   // Format phone number (Nigerian format)
@@ -64,15 +67,14 @@ class NigeriaUtils {
     }
   }
 
-  // Emergency numbers
+  // Emergency numbers (fallback quick dial references)
   static const Map<String, String> emergencyNumbers = {
-    'National Emergency': '199',
-    'Police': '199',
-    'Fire Service': '199',
-    'Ambulance': '199',
+    'National Emergency': '112',
+    'Police': '112',
+    'Fire Service': '112',
+    'Ambulance': '112',
     'FRSC': '122',
-    'Lagos Emergency': '767',
-    'Abuja Emergency': '112',
+    'NEMA': '112',
   };
 
   // Common symptoms in Nigerian context

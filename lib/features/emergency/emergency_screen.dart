@@ -71,6 +71,11 @@ class EmergencyScreen extends ConsumerWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
+            const SizedBox(height: 8),
+            Text(
+              'Use these as quick-call references. Emergency routing coverage may vary by network and location.',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[700]),
+            ),
             const SizedBox(height: 12),
             ...AppConstants.emergencyNumbers.entries.map((entry) {
               return _EmergencyCard(
