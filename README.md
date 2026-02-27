@@ -230,6 +230,7 @@ See `docs/` for operational and delivery documentation, including:
 - onboarding runbook
 - environment setup
 - v1.1 execution roadmap
+- app store and play store release guide
 - clinical safety guardrails
 - security baseline
 - testing plan
