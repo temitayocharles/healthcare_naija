@@ -193,3 +193,24 @@ test('conversations: outsider cannot read messages', async () => {
     outsiderDb.collection('conversations').doc('c2').collection('messages').doc('m1').get(),
   );
 });
+
+test('config: unauthenticated user can read feature flags', async () => {
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    const adminDb = context.firestore();
+    await adminDb.collection('config').doc('feature_flags').set({
+      ff_chat_enabled: true,
+    });
+  });
+
+  const db = testEnv.unauthenticatedContext().firestore();
+  await assertSucceeds(db.collection('config').doc('feature_flags').get());
+});
+
+test('config: non-admin cannot write feature flags', async () => {
+  const db = testEnv.authenticatedContext('regular_user').firestore();
+  await assertFails(
+    db.collection('config').doc('feature_flags').set({
+      ff_chat_enabled: false,
+    }),
+  );
+});

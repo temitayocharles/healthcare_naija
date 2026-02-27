@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../config/feature_flags.dart';
 import '../datasources/local/appointment_local_datasource.dart';
 import '../datasources/local/health_record_local_datasource.dart';
 import '../datasources/local/provider_local_datasource.dart';
@@ -34,6 +35,24 @@ final locationServiceProvider = Provider<LocationService>((ref) {
 
 final mediaUploadServiceProvider = Provider<MediaUploadService>((ref) {
   return MediaUploadService();
+});
+
+final featureFlagServiceProvider = Provider<FeatureFlagService>((ref) {
+  return FeatureFlagService();
+});
+
+final featureFlagsProvider = StreamProvider<Map<String, bool>>((ref) {
+  final service = ref.watch(featureFlagServiceProvider);
+  return service.watchFlags();
+});
+
+final featureEnabledProvider = Provider.family<bool, String>((ref, key) {
+  final fallback = FeatureFlagDefaults.valueFor(key);
+  final flags = ref.watch(featureFlagsProvider);
+  return flags.maybeWhen(
+    data: (values) => values[key] ?? fallback,
+    orElse: () => fallback,
+  );
 });
 
 final syncQueueServiceProvider = Provider<SyncQueueService>((ref) {
@@ -71,46 +90,57 @@ final userLocalDataSourceProvider = Provider<UserLocalDataSource>((ref) {
   return UserLocalDataSource(storage);
 });
 
-final providerLocalDataSourceProvider = Provider<ProviderLocalDataSource>((ref) {
+final providerLocalDataSourceProvider = Provider<ProviderLocalDataSource>((
+  ref,
+) {
   final storage = ref.watch(storageServiceProvider);
   return ProviderLocalDataSource(storage);
 });
 
-final appointmentLocalDataSourceProvider = Provider<AppointmentLocalDataSource>((ref) {
-  final storage = ref.watch(storageServiceProvider);
-  return AppointmentLocalDataSource(storage);
-});
+final appointmentLocalDataSourceProvider = Provider<AppointmentLocalDataSource>(
+  (ref) {
+    final storage = ref.watch(storageServiceProvider);
+    return AppointmentLocalDataSource(storage);
+  },
+);
 
-final healthRecordLocalDataSourceProvider = Provider<HealthRecordLocalDataSource>((ref) {
-  final storage = ref.watch(storageServiceProvider);
-  return HealthRecordLocalDataSource(storage);
-});
+final healthRecordLocalDataSourceProvider =
+    Provider<HealthRecordLocalDataSource>((ref) {
+      final storage = ref.watch(storageServiceProvider);
+      return HealthRecordLocalDataSource(storage);
+    });
 
-final symptomRecordLocalDataSourceProvider = Provider<SymptomRecordLocalDataSource>((ref) {
-  final storage = ref.watch(storageServiceProvider);
-  return SymptomRecordLocalDataSource(storage);
-});
+final symptomRecordLocalDataSourceProvider =
+    Provider<SymptomRecordLocalDataSource>((ref) {
+      final storage = ref.watch(storageServiceProvider);
+      return SymptomRecordLocalDataSource(storage);
+    });
 
 // Remote data sources
 final authRemoteDataSourceProvider = Provider<AuthRemoteDataSource>((ref) {
   return AuthRemoteDataSource(FirebaseAuth.instance);
 });
 
-final providerRemoteDataSourceProvider = Provider<ProviderRemoteDataSource>((ref) {
+final providerRemoteDataSourceProvider = Provider<ProviderRemoteDataSource>((
+  ref,
+) {
   return ProviderRemoteDataSource();
 });
 
-final appointmentRemoteDataSourceProvider = Provider<AppointmentRemoteDataSource>((ref) {
-  return AppointmentRemoteDataSource();
-});
+final appointmentRemoteDataSourceProvider =
+    Provider<AppointmentRemoteDataSource>((ref) {
+      return AppointmentRemoteDataSource();
+    });
 
-final healthRecordRemoteDataSourceProvider = Provider<HealthRecordRemoteDataSource>((ref) {
-  return HealthRecordRemoteDataSource();
-});
+final healthRecordRemoteDataSourceProvider =
+    Provider<HealthRecordRemoteDataSource>((ref) {
+      return HealthRecordRemoteDataSource();
+    });
 
-final symptomRecordRemoteDataSourceProvider = Provider<SymptomRecordRemoteDataSource>((ref) {
-  return SymptomRecordRemoteDataSource();
-});
+final symptomRecordRemoteDataSourceProvider =
+    Provider<SymptomRecordRemoteDataSource>((ref) {
+      return SymptomRecordRemoteDataSource();
+    });
 
 // Repositories
 final userRepositoryProvider = Provider<UserRepository>((ref) {
@@ -176,7 +206,9 @@ final currentLocationProvider = FutureProvider<dynamic>((ref) async {
 });
 
 // User state
-final currentUserProvider = StateNotifierProvider<UserNotifier, models.User?>((ref) {
+final currentUserProvider = StateNotifierProvider<UserNotifier, models.User?>((
+  ref,
+) {
   return UserNotifier(ref);
 });
 
@@ -206,9 +238,12 @@ class UserNotifier extends StateNotifier<models.User?> {
 }
 
 // Providers list
-final providersProvider = StateNotifierProvider<ProvidersNotifier, List<models.HealthcareProvider>>((ref) {
-  return ProvidersNotifier(ref);
-});
+final providersProvider =
+    StateNotifierProvider<ProvidersNotifier, List<models.HealthcareProvider>>((
+      ref,
+    ) {
+      return ProvidersNotifier(ref);
+    });
 
 class ProvidersNotifier extends StateNotifier<List<models.HealthcareProvider>> {
   final Ref ref;
@@ -240,9 +275,12 @@ class ProvidersNotifier extends StateNotifier<List<models.HealthcareProvider>> {
 }
 
 // Appointments
-final appointmentsProvider = StateNotifierProvider<AppointmentsNotifier, List<models.Appointment>>((ref) {
-  return AppointmentsNotifier(ref);
-});
+final appointmentsProvider =
+    StateNotifierProvider<AppointmentsNotifier, List<models.Appointment>>((
+      ref,
+    ) {
+      return AppointmentsNotifier(ref);
+    });
 
 class AppointmentsNotifier extends StateNotifier<List<models.Appointment>> {
   final Ref ref;
@@ -267,9 +305,12 @@ class AppointmentsNotifier extends StateNotifier<List<models.Appointment>> {
 }
 
 // Symptom records
-final symptomRecordsProvider = StateNotifierProvider<SymptomRecordsNotifier, List<models.SymptomRecord>>((ref) {
-  return SymptomRecordsNotifier(ref);
-});
+final symptomRecordsProvider =
+    StateNotifierProvider<SymptomRecordsNotifier, List<models.SymptomRecord>>((
+      ref,
+    ) {
+      return SymptomRecordsNotifier(ref);
+    });
 
 class SymptomRecordsNotifier extends StateNotifier<List<models.SymptomRecord>> {
   final Ref ref;
@@ -286,9 +327,12 @@ class SymptomRecordsNotifier extends StateNotifier<List<models.SymptomRecord>> {
 }
 
 // Health records
-final healthRecordsProvider = StateNotifierProvider<HealthRecordsNotifier, List<models.HealthRecord>>((ref) {
-  return HealthRecordsNotifier(ref);
-});
+final healthRecordsProvider =
+    StateNotifierProvider<HealthRecordsNotifier, List<models.HealthRecord>>((
+      ref,
+    ) {
+      return HealthRecordsNotifier(ref);
+    });
 
 class HealthRecordsNotifier extends StateNotifier<List<models.HealthRecord>> {
   final Ref ref;

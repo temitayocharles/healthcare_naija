@@ -2,6 +2,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/config/feature_flags.dart';
 import '../../core/providers/providers.dart';
 import '../../core/services/media_upload_service.dart';
 import '../../core/theme/app_theme.dart';
@@ -9,12 +10,15 @@ import '../../services/firestore_service.dart';
 import '../../widgets/sync_status_action.dart';
 
 final _messagesProvider = StreamProvider.family
-    .autoDispose<List<Map<String, dynamic>>, ({String me, String other})>((ref, ids) {
-  return FirestoreService.watchConversationMessages(
-    currentUserId: ids.me,
-    otherUserId: ids.other,
-  );
-});
+    .autoDispose<List<Map<String, dynamic>>, ({String me, String other})>((
+      ref,
+      ids,
+    ) {
+      return FirestoreService.watchConversationMessages(
+        currentUserId: ids.me,
+        otherUserId: ids.other,
+      );
+    });
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key, this.initialCaregiverId});
@@ -33,7 +37,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    if (widget.initialCaregiverId != null && widget.initialCaregiverId!.isNotEmpty) {
+    if (widget.initialCaregiverId != null &&
+        widget.initialCaregiverId!.isNotEmpty) {
       _caregiverController.text = widget.initialCaregiverId!;
     }
   }
@@ -75,7 +80,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         if (bytes == null) {
           throw Exception('Attachment bytes unavailable.');
         }
-        final upload = await ref.read(mediaUploadServiceProvider).uploadBytes(
+        final upload = await ref
+            .read(mediaUploadServiceProvider)
+            .uploadBytes(
               bytes: bytes,
               fileName: attachment.name,
               folder: 'chat_attachments',
@@ -106,6 +113,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Future<void> _pickAndSendAttachment() async {
+    final attachmentsEnabled = ref.read(
+      featureEnabledProvider(FeatureFlagKeys.chatAttachmentsEnabled),
+    );
+    if (!attachmentsEnabled) {
+      _showSnack('Chat attachments are disabled right now.');
+      return;
+    }
+
     final extensions = MediaUploadService.allowedExtensions.toList()..sort();
     final picked = await FilePicker.platform.pickFiles(
       type: FileType.custom,
@@ -122,16 +137,38 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
   Widget build(BuildContext context) {
+    final chatEnabled = ref.watch(
+      featureEnabledProvider(FeatureFlagKeys.chatEnabled),
+    );
+    final attachmentsEnabled = ref.watch(
+      featureEnabledProvider(FeatureFlagKeys.chatAttachmentsEnabled),
+    );
+
+    if (!chatEnabled) {
+      return const Scaffold(
+        body: Center(
+          child: Padding(
+            padding: EdgeInsets.all(24),
+            child: Text('Chat is currently disabled for this environment.'),
+          ),
+        ),
+      );
+    }
+
     final me = ref.watch(currentUserProvider);
     final other = _caregiverController.text.trim();
     final messagesAsync = (me != null && other.isNotEmpty)
         ? ref.watch(_messagesProvider((me: me.id, other: other)))
-        : const AsyncValue<List<Map<String, dynamic>>>.data(<Map<String, dynamic>>[]);
+        : const AsyncValue<List<Map<String, dynamic>>>.data(
+            <Map<String, dynamic>>[],
+          );
 
     return Scaffold(
       appBar: AppBar(
@@ -190,7 +227,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     final msg = messages[index];
                     final mine = msg['senderId'] == me?.id;
                     return Align(
-                      alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
+                      alignment: mine
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
                       child: Container(
                         margin: const EdgeInsets.symmetric(vertical: 4),
                         padding: const EdgeInsets.all(10),
@@ -201,12 +240,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Column(
-                          crossAxisAlignment:
-                              mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                          crossAxisAlignment: mine
+                              ? CrossAxisAlignment.end
+                              : CrossAxisAlignment.start,
                           children: [
                             if ((msg['text'] as String?)?.isNotEmpty ?? false)
                               Text(msg['text'] as String),
-                            if ((msg['attachmentName'] as String?)?.isNotEmpty ?? false)
+                            if ((msg['attachmentName'] as String?)
+                                    ?.isNotEmpty ??
+                                false)
                               Padding(
                                 padding: const EdgeInsets.only(top: 6),
                                 child: Text(
@@ -232,7 +274,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               child: Row(
                 children: [
                   IconButton(
-                    onPressed: _sending ? null : _pickAndSendAttachment,
+                    onPressed: (_sending || !attachmentsEnabled)
+                        ? null
+                        : _pickAndSendAttachment,
                     icon: const Icon(Icons.attach_file),
                   ),
                   Expanded(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../core/config/feature_flags.dart';
 import '../../core/providers/providers.dart';
 import '../../core/result/app_result.dart';
 import '../../core/services/media_upload_service.dart';
@@ -13,28 +14,35 @@ import '../../widgets/sync_status_action.dart';
 
 final _healthRecordsForCurrentUserProvider =
     FutureProvider.autoDispose<List<HealthRecord>>((ref) async {
-  final user = ref.watch(currentUserProvider);
-  if (user == null) {
-    return <HealthRecord>[];
-  }
-  final result = await ref.read(healthRecordRepositoryProvider).getForUser(user.id);
-  if (result is AppSuccess<List<HealthRecord>>) {
-    return result.data;
-  }
-  return <HealthRecord>[];
-});
+      final user = ref.watch(currentUserProvider);
+      if (user == null) {
+        return <HealthRecord>[];
+      }
+      final result = await ref
+          .read(healthRecordRepositoryProvider)
+          .getForUser(user.id);
+      if (result is AppSuccess<List<HealthRecord>>) {
+        return result.data;
+      }
+      return <HealthRecord>[];
+    });
 
 class HealthRecordsScreen extends ConsumerStatefulWidget {
   const HealthRecordsScreen({super.key});
 
   @override
-  ConsumerState<HealthRecordsScreen> createState() => _HealthRecordsScreenState();
+  ConsumerState<HealthRecordsScreen> createState() =>
+      _HealthRecordsScreenState();
 }
 
 class _HealthRecordsScreenState extends ConsumerState<HealthRecordsScreen> {
   bool _isUploading = false;
 
   Future<void> _uploadRecord() async {
+    final sharingEnabled = ref.read(
+      featureEnabledProvider(FeatureFlagKeys.healthRecordSharingEnabled),
+    );
+
     final user = ref.read(currentUserProvider);
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -85,16 +93,19 @@ class _HealthRecordsScreenState extends ConsumerState<HealthRecordsScreen> {
             TextField(
               controller: typeController,
               decoration: const InputDecoration(
-                labelText: 'Type (lab_result/prescription/scan/vaccination/other)',
+                labelText:
+                    'Type (lab_result/prescription/scan/vaccination/other)',
               ),
             ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: caregiverController,
-              decoration: const InputDecoration(
-                labelText: 'Share with Caregiver ID (Optional)',
+            if (sharingEnabled) ...[
+              const SizedBox(height: 8),
+              TextField(
+                controller: caregiverController,
+                decoration: const InputDecoration(
+                  labelText: 'Share with Caregiver ID (Optional)',
+                ),
               ),
-            ),
+            ],
           ],
         ),
         actions: [
@@ -117,7 +128,9 @@ class _HealthRecordsScreenState extends ConsumerState<HealthRecordsScreen> {
     setState(() => _isUploading = true);
 
     try {
-      final upload = await ref.read(mediaUploadServiceProvider).uploadBytes(
+      final upload = await ref
+          .read(mediaUploadServiceProvider)
+          .uploadBytes(
             bytes: bytes,
             fileName: file.name,
             folder: 'health_records',
@@ -128,23 +141,29 @@ class _HealthRecordsScreenState extends ConsumerState<HealthRecordsScreen> {
       final record = HealthRecord(
         id: recordId,
         userId: user.id,
-        title: titleController.text.trim().isEmpty ? file.name : titleController.text.trim(),
-        type: typeController.text.trim().isEmpty ? 'other' : typeController.text.trim(),
+        title: titleController.text.trim().isEmpty
+            ? file.name
+            : titleController.text.trim(),
+        type: typeController.text.trim().isEmpty
+            ? 'other'
+            : typeController.text.trim(),
         description: 'Uploaded via mobile app',
         fileUrl: upload.url,
         date: DateTime.now(),
         providerName: null,
         tags: <String>[upload.contentType],
-        isShared: caregiverController.text.trim().isNotEmpty,
+        isShared: sharingEnabled && caregiverController.text.trim().isNotEmpty,
         createdAt: DateTime.now(),
       );
 
-      final createResult = await ref.read(healthRecordRepositoryProvider).create(record);
+      final createResult = await ref
+          .read(healthRecordRepositoryProvider)
+          .create(record);
       if (createResult is AppFailure<HealthRecord>) {
         throw Exception(createResult.message);
       }
 
-      if (caregiverController.text.trim().isNotEmpty) {
+      if (sharingEnabled && caregiverController.text.trim().isNotEmpty) {
         await FirestoreService.shareHealthRecordWithCaregiver(
           recordId: recordId,
           patientId: user.id,
@@ -165,9 +184,9 @@ class _HealthRecordsScreenState extends ConsumerState<HealthRecordsScreen> {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Upload failed: $error')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Upload failed: $error')));
     } finally {
       if (mounted) {
         setState(() => _isUploading = false);
@@ -215,7 +234,11 @@ class _HealthRecordsScreenState extends ConsumerState<HealthRecordsScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.folder_shared, color: Colors.white, size: 40),
+                    const Icon(
+                      Icons.folder_shared,
+                      color: Colors.white,
+                      size: 40,
+                    ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(
@@ -223,14 +246,18 @@ class _HealthRecordsScreenState extends ConsumerState<HealthRecordsScreen> {
                         children: [
                           Text(
                             'Your Health Records',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
                                 ),
                           ),
                           Text(
                             '${records.length} record(s) synced',
-                            style: const TextStyle(color: Colors.white70, fontSize: 12),
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                            ),
                           ),
                         ],
                       ),
@@ -243,20 +270,25 @@ class _HealthRecordsScreenState extends ConsumerState<HealthRecordsScreen> {
                 onPressed: _isUploading ? null : _uploadRecord,
                 icon: const Icon(Icons.upload_file),
                 label: const Text('Upload New Record'),
-                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryColor),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryColor,
+                ),
               ),
               const SizedBox(height: 16),
               if (records.isEmpty)
                 Center(
                   child: Column(
                     children: [
-                      Icon(Icons.folder_open, size: 64, color: Colors.grey[300]),
+                      Icon(
+                        Icons.folder_open,
+                        size: 64,
+                        color: Colors.grey[300],
+                      ),
                       const SizedBox(height: 12),
                       Text(
                         'No health records yet',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: Colors.grey[600],
-                            ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(color: Colors.grey[600]),
                       ),
                     ],
                   ),
@@ -272,7 +304,9 @@ class _HealthRecordsScreenState extends ConsumerState<HealthRecordsScreen> {
                       ),
                       trailing: Icon(
                         record.isShared ? Icons.share : Icons.lock_outline,
-                        color: record.isShared ? AppTheme.primaryColor : Colors.grey,
+                        color: record.isShared
+                            ? AppTheme.primaryColor
+                            : Colors.grey,
                       ),
                     ),
                   ),
@@ -281,7 +315,8 @@ class _HealthRecordsScreenState extends ConsumerState<HealthRecordsScreen> {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Failed to load records: $error')),
+        error: (error, _) =>
+            Center(child: Text('Failed to load records: $error')),
       ),
     );
   }

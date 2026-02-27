@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/providers/providers.dart';
+import 'core/config/feature_flags.dart';
 import 'features/home/home_screen.dart';
 import 'features/auth/login_screen.dart';
 import 'features/symptom_checker/symptom_checker_screen.dart';
@@ -17,17 +18,18 @@ import 'features/telemedicine/telemedicine_screen.dart';
 import 'features/health_records/health_records_screen.dart';
 import 'models/provider.dart' as model;
 import 'widgets/main_scaffold.dart';
+import 'widgets/feature_unavailable_screen.dart';
 
 class NigeriaHealthCareApp extends ConsumerStatefulWidget {
   const NigeriaHealthCareApp({super.key});
 
   @override
-  ConsumerState<NigeriaHealthCareApp> createState() => _NigeriaHealthCareAppState();
+  ConsumerState<NigeriaHealthCareApp> createState() =>
+      _NigeriaHealthCareAppState();
 }
 
 class _NigeriaHealthCareAppState extends ConsumerState<NigeriaHealthCareApp>
     with WidgetsBindingObserver {
-
   late final GoRouter _router;
 
   @override
@@ -55,10 +57,7 @@ class _NigeriaHealthCareAppState extends ConsumerState<NigeriaHealthCareApp>
         ShellRoute(
           builder: (context, state, child) => MainScaffold(child: child),
           routes: [
-            GoRoute(
-              path: '/',
-              builder: (context, state) => const HomeScreen(),
-            ),
+            GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
             GoRoute(
               path: '/symptoms',
               builder: (context, state) => const SymptomCheckerScreen(),
@@ -91,9 +90,21 @@ class _NigeriaHealthCareAppState extends ConsumerState<NigeriaHealthCareApp>
             ),
             GoRoute(
               path: '/chat',
-              builder: (context, state) => ChatScreen(
-                initialCaregiverId: state.uri.queryParameters['caregiverId'],
-              ),
+              builder: (context, state) {
+                final chatEnabled = ref.read(
+                  featureEnabledProvider(FeatureFlagKeys.chatEnabled),
+                );
+                if (!chatEnabled) {
+                  return const FeatureUnavailableScreen(
+                    title: 'Chat',
+                    message:
+                        'Messaging is currently disabled. Please try again later.',
+                  );
+                }
+                return ChatScreen(
+                  initialCaregiverId: state.uri.queryParameters['caregiverId'],
+                );
+              },
             ),
             GoRoute(
               path: '/emergency',

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../core/config/feature_flags.dart';
 import '../../core/providers/providers.dart';
 import '../../core/theme/app_theme.dart';
 import '../../models/symptom_record.dart';
@@ -12,7 +13,8 @@ class SymptomCheckerScreen extends ConsumerStatefulWidget {
   const SymptomCheckerScreen({super.key});
 
   @override
-  ConsumerState<SymptomCheckerScreen> createState() => _SymptomCheckerScreenState();
+  ConsumerState<SymptomCheckerScreen> createState() =>
+      _SymptomCheckerScreenState();
 }
 
 class _SymptomCheckerScreenState extends ConsumerState<SymptomCheckerScreen> {
@@ -73,7 +75,9 @@ class _SymptomCheckerScreenState extends ConsumerState<SymptomCheckerScreen> {
     if (!_consentChecked) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please confirm the triage safety notice before continuing.'),
+          content: Text(
+            'Please confirm the triage safety notice before continuing.',
+          ),
         ),
       );
       return;
@@ -85,7 +89,13 @@ class _SymptomCheckerScreenState extends ConsumerState<SymptomCheckerScreen> {
     });
 
     final aiService = ref.read(aiServiceProvider);
-    final result = await aiService.analyzeSymptoms(_selectedSymptoms);
+    final aiEnabled = ref.read(
+      featureEnabledProvider(FeatureFlagKeys.aiTriageEnabled),
+    );
+    final result = await aiService.analyzeSymptoms(
+      _selectedSymptoms,
+      forceOffline: !aiEnabled,
+    );
 
     final user = ref.read(currentUserProvider);
     final record = SymptomRecord(
@@ -143,6 +153,9 @@ class _SymptomCheckerScreenState extends ConsumerState<SymptomCheckerScreen> {
   @override
   Widget build(BuildContext context) {
     final analysis = _analysisResult;
+    final aiEnabled = ref.watch(
+      featureEnabledProvider(FeatureFlagKeys.aiTriageEnabled),
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -150,10 +163,7 @@ class _SymptomCheckerScreenState extends ConsumerState<SymptomCheckerScreen> {
         actions: [
           const SyncStatusAction(),
           if (_selectedSymptoms.isNotEmpty || analysis != null)
-            IconButton(
-              icon: const Icon(Icons.refresh),
-              onPressed: _reset,
-            ),
+            IconButton(icon: const Icon(Icons.refresh), onPressed: _reset),
         ],
       ),
       body: SingleChildScrollView(
@@ -166,7 +176,9 @@ class _SymptomCheckerScreenState extends ConsumerState<SymptomCheckerScreen> {
               decoration: BoxDecoration(
                 color: AppTheme.errorColor.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppTheme.errorColor.withValues(alpha: 0.4)),
+                border: Border.all(
+                  color: AppTheme.errorColor.withValues(alpha: 0.4),
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -190,11 +202,22 @@ class _SymptomCheckerScreenState extends ConsumerState<SymptomCheckerScreen> {
                     'For severe symptoms, use emergency care immediately.',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
+                  if (!aiEnabled)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        'Remote AI triage is disabled. Running local safety-first triage mode.',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
                   CheckboxListTile(
                     value: _consentChecked,
                     contentPadding: EdgeInsets.zero,
                     title: const Text('I understand and want triage guidance.'),
-                    onChanged: (v) => setState(() => _consentChecked = v ?? false),
+                    onChanged: (v) =>
+                        setState(() => _consentChecked = v ?? false),
                   ),
                 ],
               ),
@@ -202,7 +225,9 @@ class _SymptomCheckerScreenState extends ConsumerState<SymptomCheckerScreen> {
             const SizedBox(height: 24),
             Text(
               'What symptoms are you experiencing?',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             TextField(
@@ -219,7 +244,9 @@ class _SymptomCheckerScreenState extends ConsumerState<SymptomCheckerScreen> {
             const SizedBox(height: 16),
             Text(
               'Common symptoms:',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
             ),
             const SizedBox(height: 8),
             Wrap(
@@ -256,7 +283,11 @@ class _SymptomCheckerScreenState extends ConsumerState<SymptomCheckerScreen> {
                       style: const TextStyle(color: Colors.white),
                     ),
                     backgroundColor: AppTheme.primaryColor,
-                    deleteIcon: const Icon(Icons.close, size: 18, color: Colors.white),
+                    deleteIcon: const Icon(
+                      Icons.close,
+                      size: 18,
+                      color: Colors.white,
+                    ),
                     onDeleted: () => _removeSymptom(symptom),
                   );
                 }).toList(),
@@ -270,10 +301,15 @@ class _SymptomCheckerScreenState extends ConsumerState<SymptomCheckerScreen> {
                       ? const SizedBox(
                           width: 20,
                           height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
                         )
                       : const Icon(Icons.psychology),
-                  label: Text(_isAnalyzing ? 'Analyzing...' : 'Run Triage Check'),
+                  label: Text(
+                    _isAnalyzing ? 'Analyzing...' : 'Run Triage Check',
+                  ),
                 ),
               ),
             ],
@@ -284,9 +320,13 @@ class _SymptomCheckerScreenState extends ConsumerState<SymptomCheckerScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: _getSeverityColor(analysis['severity']).withValues(alpha: 0.1),
+                  color: _getSeverityColor(
+                    analysis['severity'],
+                  ).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: _getSeverityColor(analysis['severity'])),
+                  border: Border.all(
+                    color: _getSeverityColor(analysis['severity']),
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -302,9 +342,12 @@ class _SymptomCheckerScreenState extends ConsumerState<SymptomCheckerScreen> {
                         children: [
                           Text(
                             'Triage urgency: ${analysis['severity'].toString().toUpperCase()}',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
                                   fontWeight: FontWeight.bold,
-                                  color: _getSeverityColor(analysis['severity']),
+                                  color: _getSeverityColor(
+                                    analysis['severity'],
+                                  ),
                                 ),
                           ),
                           const SizedBox(height: 4),
@@ -319,30 +362,37 @@ class _SymptomCheckerScreenState extends ConsumerState<SymptomCheckerScreen> {
               Text(
                 analysis['safety_disclaimer']?.toString() ?? '',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey[700],
-                      fontStyle: FontStyle.italic,
-                    ),
+                  color: Colors.grey[700],
+                  fontStyle: FontStyle.italic,
+                ),
               ),
               const SizedBox(height: 16),
               if (analysis['possible_conditions'] != null &&
                   (analysis['possible_conditions'] as List).isNotEmpty) ...[
                 Text(
                   'Potential causes (non-diagnostic):',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 8),
-                ...((analysis['possible_conditions'] as List).cast<String>()).map((condition) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.medical_services, size: 18, color: AppTheme.primaryColor),
-                        const SizedBox(width: 8),
-                        Expanded(child: Text(condition)),
-                      ],
-                    ),
-                  );
-                }),
+                ...((analysis['possible_conditions'] as List).cast<String>())
+                    .map((condition) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.medical_services,
+                              size: 18,
+                              color: AppTheme.primaryColor,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(child: Text(condition)),
+                          ],
+                        ),
+                      );
+                    }),
               ],
               const SizedBox(height: 24),
               if (analysis['severity'] == 'emergency')
@@ -352,7 +402,9 @@ class _SymptomCheckerScreenState extends ConsumerState<SymptomCheckerScreen> {
                     onPressed: () => context.push('/emergency'),
                     icon: const Icon(Icons.emergency),
                     label: const Text('Open Emergency Services'),
-                    style: ElevatedButton.styleFrom(backgroundColor: AppTheme.errorColor),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.errorColor,
+                    ),
                   ),
                 ),
             ],

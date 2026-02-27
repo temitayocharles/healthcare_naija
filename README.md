@@ -178,6 +178,26 @@ Notes:
 - AI provider keys (example `OPENAI_API_KEY`) are secrets and must not be committed.
 - Remote AI triage is disabled by default unless `ENABLE_AI_TRIAGE=true` and `OPENAI_API_KEY` are provided.
 
+## Feature Flags
+
+Feature flags are supported with two levels:
+
+1. Build-time defaults via `--dart-define` (see `.env.firebase.example`)
+2. Runtime overrides via Firestore document: `config/feature_flags`
+
+Example Firestore payload:
+
+```json
+{
+  "ff_chat_enabled": true,
+  "ff_chat_attachments_enabled": false,
+  "ff_health_record_sharing_enabled": true,
+  "ff_ai_triage_enabled": false
+}
+```
+
+Unknown keys are ignored. If Firestore is unavailable, app uses build-time defaults.
+
 ## Deployment
 
 ### Local script deploys

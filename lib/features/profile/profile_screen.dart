@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/config/feature_flags.dart';
 import '../../core/providers/providers.dart';
 import '../../core/theme/app_theme.dart';
 import '../../widgets/sync_status_action.dart';
@@ -12,16 +13,16 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(currentUserProvider);
     final isGuest = user == null || user.id.startsWith('guest_');
+    final isChatEnabled = ref.watch(
+      featureEnabledProvider(FeatureFlagKeys.chatEnabled),
+    );
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
         actions: [
           const SyncStatusAction(),
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {},
-          ),
+          IconButton(icon: const Icon(Icons.settings), onPressed: () {}),
         ],
       ),
       body: SingleChildScrollView(
@@ -46,8 +47,12 @@ class ProfileScreen extends ConsumerWidget {
                 children: [
                   CircleAvatar(
                     radius: 50,
-                    backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
-                    backgroundImage: const AssetImage('assets/images/profile_placeholder.jpg'),
+                    backgroundColor: AppTheme.primaryColor.withValues(
+                      alpha: 0.1,
+                    ),
+                    backgroundImage: const AssetImage(
+                      'assets/images/profile_placeholder.jpg',
+                    ),
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -58,9 +63,9 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                   Text(
                     user?.role ?? 'patient',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                   ),
                   const SizedBox(height: 16),
                   OutlinedButton(
@@ -112,11 +117,12 @@ class ProfileScreen extends ConsumerWidget {
               title: 'Health Records',
               onTap: () => context.push('/records'),
             ),
-            _MenuItem(
-              icon: Icons.chat_bubble_outline,
-              title: 'Chat with Caregiver',
-              onTap: () => context.push('/chat'),
-            ),
+            if (isChatEnabled)
+              _MenuItem(
+                icon: Icons.chat_bubble_outline,
+                title: 'Chat with Caregiver',
+                onTap: () => context.push('/chat'),
+              ),
             _MenuItem(
               icon: Icons.notifications_outlined,
               title: 'Notifications',
@@ -137,11 +143,7 @@ class ProfileScreen extends ConsumerWidget {
               title: 'Help & Support',
               onTap: () {},
             ),
-            _MenuItem(
-              icon: Icons.info_outline,
-              title: 'About',
-              onTap: () {},
-            ),
+            _MenuItem(icon: Icons.info_outline, title: 'About', onTap: () {}),
           ],
         ),
       ),

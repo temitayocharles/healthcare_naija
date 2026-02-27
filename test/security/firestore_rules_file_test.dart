@@ -13,6 +13,7 @@ void main() {
     expect(rules.contains('match /health_record_shares/{shareId}'), isTrue);
     expect(rules.contains('match /conversations/{conversationId}'), isTrue);
     expect(rules.contains('match /messages/{messageId}'), isTrue);
+    expect(rules.contains('match /config/{docId}'), isTrue);
     expect(rules.contains('function signedIn()'), isTrue);
     expect(rules.contains('validUserDoc'), isTrue);
     expect(rules.contains('validAppointmentDoc'), isTrue);

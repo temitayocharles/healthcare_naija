@@ -145,6 +145,28 @@ Important:
 - Firebase Web API keys are public identifiers; enforce restrictions in Google Cloud.
 - `FIREBASE_TOKEN` (for deploy) and AI keys are secrets; keep in shell/CI secrets only.
 
+## 4.6 Feature Flags (Build-Time + Runtime)
+
+Build-time defaults:
+
+- Set `FF_*` variables in `.env.firebase.local` (see `.env.firebase.example`).
+- `scripts/run_web_with_firebase.sh` forwards those values as `--dart-define`.
+
+Runtime overrides:
+
+- Create/update Firestore document: `config/feature_flags`
+- Example keys:
+  - `ff_chat_enabled`
+  - `ff_chat_attachments_enabled`
+  - `ff_health_record_sharing_enabled`
+  - `ff_ai_triage_enabled`
+
+Behavior:
+
+- Runtime Firestore values override build-time defaults.
+- Unknown keys are ignored.
+- If Firestore flags cannot be loaded, app safely falls back to build-time defaults.
+
 ## 5. Deploy Commands
 
 Local staging deploy:
