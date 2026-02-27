@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/providers/providers.dart';
+import '../../core/services/media_upload_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../services/firestore_service.dart';
 import '../../widgets/sync_status_action.dart';
@@ -105,9 +106,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Future<void> _pickAndSendAttachment() async {
+    final extensions = MediaUploadService.allowedExtensions.toList()..sort();
     final picked = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: const ['jpg', 'jpeg', 'png', 'pdf'],
+      allowedExtensions: extensions,
       withData: true,
     );
     if (picked == null || picked.files.isEmpty) {

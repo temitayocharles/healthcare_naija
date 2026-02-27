@@ -176,6 +176,7 @@ If Firebase is not configured in the runtime environment, protected Firebase-bac
 Notes:
 - Firebase Web API keys are not secrets, but must be restricted in Google Cloud (HTTP referrers, API scope).
 - AI provider keys (example `OPENAI_API_KEY`) are secrets and must not be committed.
+- Remote AI triage is disabled by default unless `ENABLE_AI_TRIAGE=true` and `OPENAI_API_KEY` are provided.
 
 ## Deployment
 

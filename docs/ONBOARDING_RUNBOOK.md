@@ -59,9 +59,9 @@ flutter run -d chrome
 ## 4.1 Firebase Projects
 Configured aliases are in `.firebaserc`:
 
-- `default` -> `nigeria-health-care`
-- `staging` -> `nigeria-health-care-staging`
-- `production` -> `nigeria-health-care`
+- `default` -> `healthcare-naija`
+- `staging` -> `healthcare-naija-staging`
+- `production` -> `healthcare-naija`
 
 ## 4.2 GitHub Actions Secrets (Required)
 Set in GitHub repo settings:
@@ -85,14 +85,21 @@ For local deploy scripts:
 Example:
 
 ```bash
-export FIREBASE_PROJECT_ID_STAGING=nigeria-health-care-staging
-export FIREBASE_PROJECT_ID_PRODUCTION=nigeria-health-care
+export FIREBASE_PROJECT_ID_STAGING=healthcare-naija-staging
+export FIREBASE_PROJECT_ID_PRODUCTION=healthcare-naija
 ```
 
 ## 4.4 AI API Token
 AI token is **not auto-generated** for external providers. If using external AI APIs, you must supply keys explicitly (for example `OPENAI_API_KEY`) through secure env/secret management.
 
 If no external key is provided, keep AI features in local/mock/fallback mode.
+
+To enable remote AI triage safely, configure:
+
+- `OPENAI_API_KEY`
+- `OPENAI_BASE_URL` (optional)
+- `OPENAI_MODEL` (optional)
+- `ENABLE_AI_TRIAGE=true`
 
 ## 4.5 Firebase App Credentials (iOS + Web)
 

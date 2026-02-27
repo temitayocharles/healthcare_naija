@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../core/providers/providers.dart';
 import '../../core/result/app_result.dart';
+import '../../core/services/media_upload_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../models/health_record.dart';
 import '../../services/firestore_service.dart';
@@ -42,9 +43,10 @@ class _HealthRecordsScreenState extends ConsumerState<HealthRecordsScreen> {
       return;
     }
 
+    final extensions = MediaUploadService.allowedExtensions.toList()..sort();
     final picked = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: const ['jpg', 'jpeg', 'png', 'pdf'],
+      allowedExtensions: extensions,
       withData: true,
     );
 

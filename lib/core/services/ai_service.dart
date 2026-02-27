@@ -2,11 +2,14 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../config/app_env.dart';
 import '../constants/app_constants.dart';
 
 class AIService {
-  static const String? _openAiApiKey = null;
-  static const String _baseUrl = 'https://api.openai.com/v1';
+  static const String _openAiApiKey = AppEnv.openAiApiKey;
+  static const String _baseUrl = AppEnv.openAiBaseUrl;
+  static const String _model = AppEnv.openAiModel;
+  static const bool _enableAiTriage = AppEnv.enableAiTriage;
 
   static const String safetyDisclaimer =
       'This tool provides triage guidance only and is not a medical diagnosis. '
@@ -245,7 +248,7 @@ class AIService {
       return analyzeSymptomsLocal(normalizedSymptoms);
     }
 
-    if (_openAiApiKey == null) {
+    if (!_enableAiTriage || _openAiApiKey.isEmpty) {
       return analyzeSymptomsLocal(normalizedSymptoms);
     }
 
@@ -257,7 +260,7 @@ class AIService {
           'Authorization': 'Bearer $_openAiApiKey',
         },
         body: jsonEncode({
-          'model': 'gpt-3.5-turbo',
+          'model': _model,
           'messages': [
             {
               'role': 'system',
