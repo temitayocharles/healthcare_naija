@@ -23,7 +23,24 @@ jobs:
       - run: flutter analyze
       - run: flutter test
       - name: Build web staging artifact
-        run: flutter build web --release
+        env:
+          FIREBASE_WEB_API_KEY_STAGING: ${{ secrets.FIREBASE_WEB_API_KEY_STAGING }}
+          FIREBASE_WEB_APP_ID_STAGING: ${{ secrets.FIREBASE_WEB_APP_ID_STAGING }}
+          FIREBASE_WEB_MESSAGING_SENDER_ID_STAGING: ${{ secrets.FIREBASE_WEB_MESSAGING_SENDER_ID_STAGING }}
+          FIREBASE_WEB_PROJECT_ID_STAGING: ${{ secrets.FIREBASE_WEB_PROJECT_ID_STAGING }}
+          FIREBASE_WEB_STORAGE_BUCKET_STAGING: ${{ secrets.FIREBASE_WEB_STORAGE_BUCKET_STAGING }}
+        run: |
+          if [ -z "${FIREBASE_WEB_API_KEY_STAGING}" ] || [ -z "${FIREBASE_WEB_APP_ID_STAGING}" ] || [ -z "${FIREBASE_WEB_MESSAGING_SENDER_ID_STAGING}" ] || [ -z "${FIREBASE_WEB_PROJECT_ID_STAGING}" ] || [ -z "${FIREBASE_WEB_STORAGE_BUCKET_STAGING}" ]; then
+            echo "Missing one or more staging web Firebase secrets."
+            echo "Required: FIREBASE_WEB_API_KEY_STAGING, FIREBASE_WEB_APP_ID_STAGING, FIREBASE_WEB_MESSAGING_SENDER_ID_STAGING, FIREBASE_WEB_PROJECT_ID_STAGING, FIREBASE_WEB_STORAGE_BUCKET_STAGING."
+            exit 1
+          fi
+          flutter build web --release \
+            --dart-define=FIREBASE_API_KEY="${FIREBASE_WEB_API_KEY_STAGING}" \
+            --dart-define=FIREBASE_APP_ID="${FIREBASE_WEB_APP_ID_STAGING}" \
+            --dart-define=FIREBASE_MESSAGING_SENDER_ID="${FIREBASE_WEB_MESSAGING_SENDER_ID_STAGING}" \
+            --dart-define=FIREBASE_PROJECT_ID="${FIREBASE_WEB_PROJECT_ID_STAGING}" \
+            --dart-define=FIREBASE_STORAGE_BUCKET="${FIREBASE_WEB_STORAGE_BUCKET_STAGING}"
       - name: Deploy to Firebase Staging
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

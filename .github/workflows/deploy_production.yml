@@ -23,7 +23,24 @@ jobs:
       - run: flutter analyze
       - run: flutter test
       - name: Build web production artifact
-        run: flutter build web --release
+        env:
+          FIREBASE_WEB_API_KEY_PRODUCTION: ${{ secrets.FIREBASE_WEB_API_KEY_PRODUCTION }}
+          FIREBASE_WEB_APP_ID_PRODUCTION: ${{ secrets.FIREBASE_WEB_APP_ID_PRODUCTION }}
+          FIREBASE_WEB_MESSAGING_SENDER_ID_PRODUCTION: ${{ secrets.FIREBASE_WEB_MESSAGING_SENDER_ID_PRODUCTION }}
+          FIREBASE_WEB_PROJECT_ID_PRODUCTION: ${{ secrets.FIREBASE_WEB_PROJECT_ID_PRODUCTION }}
+          FIREBASE_WEB_STORAGE_BUCKET_PRODUCTION: ${{ secrets.FIREBASE_WEB_STORAGE_BUCKET_PRODUCTION }}
+        run: |
+          if [ -z "${FIREBASE_WEB_API_KEY_PRODUCTION}" ] || [ -z "${FIREBASE_WEB_APP_ID_PRODUCTION}" ] || [ -z "${FIREBASE_WEB_MESSAGING_SENDER_ID_PRODUCTION}" ] || [ -z "${FIREBASE_WEB_PROJECT_ID_PRODUCTION}" ] || [ -z "${FIREBASE_WEB_STORAGE_BUCKET_PRODUCTION}" ]; then
+            echo "Missing one or more production web Firebase secrets."
+            echo "Required: FIREBASE_WEB_API_KEY_PRODUCTION, FIREBASE_WEB_APP_ID_PRODUCTION, FIREBASE_WEB_MESSAGING_SENDER_ID_PRODUCTION, FIREBASE_WEB_PROJECT_ID_PRODUCTION, FIREBASE_WEB_STORAGE_BUCKET_PRODUCTION."
+            exit 1
+          fi
+          flutter build web --release \
+            --dart-define=FIREBASE_API_KEY="${FIREBASE_WEB_API_KEY_PRODUCTION}" \
+            --dart-define=FIREBASE_APP_ID="${FIREBASE_WEB_APP_ID_PRODUCTION}" \
+            --dart-define=FIREBASE_MESSAGING_SENDER_ID="${FIREBASE_WEB_MESSAGING_SENDER_ID_PRODUCTION}" \
+            --dart-define=FIREBASE_PROJECT_ID="${FIREBASE_WEB_PROJECT_ID_PRODUCTION}" \
+            --dart-define=FIREBASE_STORAGE_BUCKET="${FIREBASE_WEB_STORAGE_BUCKET_PRODUCTION}"
       - name: Deploy to Firebase Production
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
