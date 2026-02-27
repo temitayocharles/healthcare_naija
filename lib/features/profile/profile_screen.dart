@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/config/feature_flags.dart';
 import '../../core/providers/providers.dart';
 import '../../core/theme/app_theme.dart';
+import '../../widgets/app_illustration.dart';
 import '../../widgets/sync_status_action.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -45,14 +46,10 @@ class ProfileScreen extends ConsumerWidget {
               ),
               child: Column(
                 children: [
-                  CircleAvatar(
-                    radius: 50,
-                    backgroundColor: AppTheme.primaryColor.withValues(
-                      alpha: 0.1,
-                    ),
-                    backgroundImage: const AssetImage(
-                      'assets/images/profile_placeholder.jpg',
-                    ),
+                  const AppIllustration(
+                    asset: 'assets/illustrations/profile_guardian.svg',
+                    height: 100,
+                    width: 100,
                   ),
                   const SizedBox(height: 16),
                   Text(

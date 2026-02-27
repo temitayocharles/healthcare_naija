@@ -6,20 +6,23 @@ import '../../core/providers/providers.dart';
 import '../../core/result/app_result.dart';
 import '../../core/services/appointment_service.dart';
 import '../../models/appointment.dart';
+import '../../widgets/app_illustration.dart';
 import '../../widgets/sync_status_action.dart';
 
 final _appointmentsForCurrentUserProvider =
     FutureProvider.autoDispose<List<Appointment>>((ref) async {
-  final user = ref.watch(currentUserProvider);
-  if (user == null) {
-    return <Appointment>[];
-  }
-  final result = await ref.read(appointmentRepositoryProvider).getForUser(user.id);
-  if (result is AppSuccess<List<Appointment>>) {
-    return result.data;
-  }
-  return <Appointment>[];
-});
+      final user = ref.watch(currentUserProvider);
+      if (user == null) {
+        return <Appointment>[];
+      }
+      final result = await ref
+          .read(appointmentRepositoryProvider)
+          .getForUser(user.id);
+      if (result is AppSuccess<List<Appointment>>) {
+        return result.data;
+      }
+      return <Appointment>[];
+    });
 
 class AppointmentsScreen extends ConsumerWidget {
   const AppointmentsScreen({super.key});
@@ -33,9 +36,7 @@ class AppointmentsScreen extends ConsumerWidget {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Appointments'),
-          actions: const [
-            SyncStatusAction(),
-          ],
+          actions: const [SyncStatusAction()],
           bottom: const TabBar(
             labelColor: Colors.white,
             unselectedLabelColor: Colors.white70,
@@ -63,12 +64,15 @@ class AppointmentsScreen extends ConsumerWidget {
                 }).toList(),
               ),
               _AppointmentList(
-                appointments: appointments.where((a) => a.status == 'cancelled').toList(),
+                appointments: appointments
+                    .where((a) => a.status == 'cancelled')
+                    .toList(),
               ),
             ],
           ),
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => Center(child: Text('Failed to load appointments: $error')),
+          error: (error, _) =>
+              Center(child: Text('Failed to load appointments: $error')),
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () => context.go('/providers'),
@@ -92,24 +96,23 @@ class _AppointmentList extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.calendar_today,
-              size: 64,
-              color: Colors.grey[300],
+            const AppIllustration(
+              asset: 'assets/illustrations/empty_appointments.svg',
+              height: 120,
             ),
             const SizedBox(height: 16),
             Text(
               'No appointments',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Colors.grey[600],
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(color: Colors.grey[600]),
             ),
             const SizedBox(height: 8),
             Text(
               'Book an appointment with a provider',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[500],
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.grey[500]),
             ),
           ],
         ),
@@ -132,7 +135,9 @@ class _AppointmentList extends ConsumerWidget {
             trailing: appointment.status == 'pending'
                 ? TextButton(
                     onPressed: () async {
-                      await ref.read(appointmentServiceProvider).cancelAppointment(appointment.id);
+                      await ref
+                          .read(appointmentServiceProvider)
+                          .cancelAppointment(appointment.id);
                       ref.invalidate(_appointmentsForCurrentUserProvider);
                     },
                     child: const Text('Cancel'),

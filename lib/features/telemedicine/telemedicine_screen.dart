@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
+import '../../widgets/app_illustration.dart';
 import '../../widgets/healthcare_hero_banner.dart';
 import '../../widgets/sync_status_action.dart';
 
@@ -136,7 +137,10 @@ class TelemedicineScreen extends ConsumerWidget {
             Center(
               child: Column(
                 children: [
-                  Icon(Icons.history, size: 48, color: Colors.grey[300]),
+                  const AppIllustration(
+                    asset: 'assets/illustrations/telemedicine_consult.svg',
+                    height: 96,
+                  ),
                   const SizedBox(height: 8),
                   Text(
                     'No recent consultations',

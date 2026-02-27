@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/constants/app_constants.dart';
+import '../../widgets/app_illustration.dart';
 import '../../widgets/sync_status_action.dart';
 
 class EmergencyScreen extends ConsumerWidget {
@@ -21,9 +22,7 @@ class EmergencyScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Emergency Services'),
         backgroundColor: AppTheme.errorColor,
-        actions: const [
-          SyncStatusAction(),
-        ],
+        actions: const [SyncStatusAction()],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -40,10 +39,9 @@ class EmergencyScreen extends ConsumerWidget {
               ),
               child: Column(
                 children: [
-                  const Icon(
-                    Icons.emergency,
-                    size: 60,
-                    color: Colors.white,
+                  const AppIllustration(
+                    asset: 'assets/illustrations/emergency_alert.svg',
+                    height: 92,
                   ),
                   const SizedBox(height: 12),
                   Text(
@@ -67,14 +65,16 @@ class EmergencyScreen extends ConsumerWidget {
             // Emergency Numbers
             Text(
               'Emergency Numbers',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
               'Use these as quick-call references. Emergency routing coverage may vary by network and location.',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[700]),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.grey[700]),
             ),
             const SizedBox(height: 12),
             ...AppConstants.emergencyNumbers.entries.map((entry) {
@@ -90,9 +90,9 @@ class EmergencyScreen extends ConsumerWidget {
             // Quick Actions
             Text(
               'Quick Actions',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Row(
@@ -140,22 +140,25 @@ class EmergencyScreen extends ConsumerWidget {
             // First Aid Tips
             Text(
               'First Aid Tips',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             _FirstAidCard(
               title: 'Unconscious Person',
-              steps: '1. Check responsiveness\n2. Call for help\n3. Place in recovery position\n4. Monitor breathing',
+              steps:
+                  '1. Check responsiveness\n2. Call for help\n3. Place in recovery position\n4. Monitor breathing',
             ),
             _FirstAidCard(
               title: 'Severe Bleeding',
-              steps: '1. Apply direct pressure\n2. Elevate the wound\n3. Do not remove blood-soaked cloth\n4. Call emergency',
+              steps:
+                  '1. Apply direct pressure\n2. Elevate the wound\n3. Do not remove blood-soaked cloth\n4. Call emergency',
             ),
             _FirstAidCard(
               title: 'Choking',
-              steps: '1. Encourage coughing\n2. Back blows\n3. Heimlich maneuver\n4. Call emergency if fails',
+              steps:
+                  '1. Encourage coughing\n2. Back blows\n3. Heimlich maneuver\n4. Call emergency if fails',
             ),
           ],
         ),
@@ -192,9 +195,7 @@ class _EmergencyCard extends StatelessWidget {
         subtitle: Text(number),
         trailing: ElevatedButton(
           onPressed: onCall,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppTheme.errorColor,
-          ),
+          style: ElevatedButton.styleFrom(backgroundColor: AppTheme.errorColor),
           child: const Text('Call'),
         ),
       ),
@@ -237,10 +238,7 @@ class _FirstAidCard extends StatelessWidget {
   final String title;
   final String steps;
 
-  const _FirstAidCard({
-    required this.title,
-    required this.steps,
-  });
+  const _FirstAidCard({required this.title, required this.steps});
 
   @override
   Widget build(BuildContext context) {
@@ -249,10 +247,7 @@ class _FirstAidCard extends StatelessWidget {
       child: ExpansionTile(
         title: Text(title),
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(steps),
-          ),
+          Padding(padding: const EdgeInsets.all(16), child: Text(steps)),
         ],
       ),
     );

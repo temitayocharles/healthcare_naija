@@ -5,13 +5,15 @@ import '../../core/theme/app_theme.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/providers/providers.dart';
 import '../../models/provider.dart' as model;
+import '../../widgets/app_illustration.dart';
 import '../../widgets/sync_status_action.dart';
 
 class ProviderSearchScreen extends ConsumerStatefulWidget {
   const ProviderSearchScreen({super.key});
 
   @override
-  ConsumerState<ProviderSearchScreen> createState() => _ProviderSearchScreenState();
+  ConsumerState<ProviderSearchScreen> createState() =>
+      _ProviderSearchScreenState();
 }
 
 class _ProviderSearchScreenState extends ConsumerState<ProviderSearchScreen> {
@@ -20,7 +22,9 @@ class _ProviderSearchScreenState extends ConsumerState<ProviderSearchScreen> {
   String? _selectedState;
   String _sortBy = 'rating';
 
-  List<model.Provider> _filteredProviders(List<model.Provider> sourceProviders) {
+  List<model.Provider> _filteredProviders(
+    List<model.Provider> sourceProviders,
+  ) {
     var providers = sourceProviders.where((p) {
       // Filter by search query
       if (_searchQuery.isNotEmpty) {
@@ -87,9 +91,7 @@ class _ProviderSearchScreenState extends ConsumerState<ProviderSearchScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Find Providers'),
-        actions: const [
-          SyncStatusAction(),
-        ],
+        actions: const [SyncStatusAction()],
       ),
       body: Column(
         children: [
@@ -140,9 +142,20 @@ class _ProviderSearchScreenState extends ConsumerState<ProviderSearchScreen> {
                       _FilterDropdown(
                         value: _sortBy,
                         hint: 'Sort by',
-                        items: ['rating', 'distance', 'price_low', 'price_high'],
-                        labels: const ['Rating', 'Distance', 'Price: Low', 'Price: High'],
-                        onChanged: (v) => setState(() => _sortBy = v ?? 'rating'),
+                        items: [
+                          'rating',
+                          'distance',
+                          'price_low',
+                          'price_high',
+                        ],
+                        labels: const [
+                          'Rating',
+                          'Distance',
+                          'Price: Low',
+                          'Price: High',
+                        ],
+                        onChanged: (v) =>
+                            setState(() => _sortBy = v ?? 'rating'),
                       ),
                     ],
                   ),
@@ -158,9 +171,9 @@ class _ProviderSearchScreenState extends ConsumerState<ProviderSearchScreen> {
               children: [
                 Text(
                   '${filteredProviders.length} providers found',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[600],
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                 ),
               ],
             ),
@@ -168,18 +181,39 @@ class _ProviderSearchScreenState extends ConsumerState<ProviderSearchScreen> {
 
           // Provider list
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: filteredProviders.length,
-              itemBuilder: (context, index) {
-                final provider = filteredProviders[index];
-                return _ProviderCard(
-                  provider: provider,
-                  icon: _getProviderIcon(provider.type),
-                  onTap: () => _showProviderDetails(provider),
-                );
-              },
-            ),
+            child: filteredProviders.isEmpty
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const AppIllustration(
+                            asset:
+                                'assets/illustrations/provider_directory.svg',
+                            height: 120,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'No providers match your filters',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: filteredProviders.length,
+                    itemBuilder: (context, index) {
+                      final provider = filteredProviders[index];
+                      return _ProviderCard(
+                        provider: provider,
+                        icon: _getProviderIcon(provider.type),
+                        onTap: () => _showProviderDetails(provider),
+                      );
+                    },
+                  ),
           ),
         ],
       ),
@@ -214,8 +248,12 @@ class _ProviderSearchScreenState extends ConsumerState<ProviderSearchScreen> {
                       borderRadius: BorderRadius.circular(12),
                       image: provider.profileImageUrl != null
                           ? DecorationImage(
-                              image: provider.profileImageUrl!.startsWith('assets/')
-                                  ? AssetImage(provider.profileImageUrl!) as ImageProvider
+                              image:
+                                  provider.profileImageUrl!.startsWith(
+                                    'assets/',
+                                  )
+                                  ? AssetImage(provider.profileImageUrl!)
+                                        as ImageProvider
                                   : NetworkImage(provider.profileImageUrl!),
                               fit: BoxFit.cover,
                             )
@@ -240,20 +278,22 @@ class _ProviderSearchScreenState extends ConsumerState<ProviderSearchScreen> {
                             Expanded(
                               child: Text(
                                 provider.name,
-                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                style: Theme.of(context).textTheme.titleLarge
+                                    ?.copyWith(fontWeight: FontWeight.bold),
                               ),
                             ),
                             if (provider.isVerified)
-                              const Icon(Icons.verified, color: AppTheme.primaryColor, size: 20),
+                              const Icon(
+                                Icons.verified,
+                                color: AppTheme.primaryColor,
+                                size: 20,
+                              ),
                           ],
                         ),
                         Text(
                           '${provider.type}${provider.specialty != null ? ' - ${provider.specialty}' : ''}',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey[600],
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: Colors.grey[600]),
                         ),
                       ],
                     ),
@@ -267,7 +307,9 @@ class _ProviderSearchScreenState extends ConsumerState<ProviderSearchScreen> {
                 children: [
                   ...List.generate(5, (i) {
                     return Icon(
-                      i < provider.rating.floor() ? Icons.star : Icons.star_border,
+                      i < provider.rating.floor()
+                          ? Icons.star
+                          : Icons.star_border,
                       color: Colors.amber,
                       size: 20,
                     );
@@ -291,14 +333,21 @@ class _ProviderSearchScreenState extends ConsumerState<ProviderSearchScreen> {
               ],
 
               // Details
-              _DetailRow(icon: Icons.location_on, text: '${provider.address}, ${provider.state}'),
+              _DetailRow(
+                icon: Icons.location_on,
+                text: '${provider.address}, ${provider.state}',
+              ),
               _DetailRow(icon: Icons.phone, text: provider.phone),
               if (provider.workingHours != null)
-                _DetailRow(icon: Icons.access_time, text: provider.workingHours!),
+                _DetailRow(
+                  icon: Icons.access_time,
+                  text: provider.workingHours!,
+                ),
               const SizedBox(height: 16),
 
               // Services
-              if (provider.services != null && provider.services!.isNotEmpty) ...[
+              if (provider.services != null &&
+                  provider.services!.isNotEmpty) ...[
                 Text(
                   'Services',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -309,7 +358,9 @@ class _ProviderSearchScreenState extends ConsumerState<ProviderSearchScreen> {
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: provider.services!.map((s) => Chip(label: Text(s))).toList(),
+                  children: provider.services!
+                      .map((s) => Chip(label: Text(s)))
+                      .toList(),
                 ),
                 const SizedBox(height: 16),
               ],
@@ -318,7 +369,8 @@ class _ProviderSearchScreenState extends ConsumerState<ProviderSearchScreen> {
               if (provider.priceMin != null)
                 _DetailRow(
                   icon: Icons.attach_money,
-                  text: '₦${provider.priceMin!.toStringAsFixed(0)} - ₦${provider.priceMax?.toStringAsFixed(0) ?? ''}',
+                  text:
+                      '₦${provider.priceMin!.toStringAsFixed(0)} - ₦${provider.priceMax?.toStringAsFixed(0) ?? ''}',
                 ),
               const SizedBox(height: 24),
 
@@ -383,10 +435,7 @@ class _FilterDropdown extends StatelessWidget {
         hint: Text(hint),
         underline: const SizedBox(),
         items: [
-          DropdownMenuItem<String>(
-            value: null,
-            child: Text('All $hint'),
-          ),
+          DropdownMenuItem<String>(value: null, child: Text('All $hint')),
           ...items.asMap().entries.map((e) {
             return DropdownMenuItem<String>(
               value: e.value,
@@ -430,7 +479,8 @@ class _ProviderCard extends StatelessWidget {
                   image: provider.profileImageUrl != null
                       ? DecorationImage(
                           image: provider.profileImageUrl!.startsWith('assets/')
-                              ? AssetImage(provider.profileImageUrl!) as ImageProvider
+                              ? AssetImage(provider.profileImageUrl!)
+                                    as ImageProvider
                               : NetworkImage(provider.profileImageUrl!),
                           fit: BoxFit.cover,
                         )
@@ -451,20 +501,23 @@ class _ProviderCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             provider.name,
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.bold),
                           ),
                         ),
                         if (provider.isVerified)
-                          const Icon(Icons.verified, color: AppTheme.primaryColor, size: 18),
+                          const Icon(
+                            Icons.verified,
+                            color: AppTheme.primaryColor,
+                            size: 18,
+                          ),
                       ],
                     ),
                     Text(
                       '${provider.type}${provider.specialty != null ? ' - ${provider.specialty}' : ''}',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey[600],
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
                     ),
                     const SizedBox(height: 4),
                     Row(
@@ -476,7 +529,11 @@ class _ProviderCard extends StatelessWidget {
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                         const SizedBox(width: 8),
-                        const Icon(Icons.location_on, size: 16, color: Colors.grey),
+                        const Icon(
+                          Icons.location_on,
+                          size: 16,
+                          color: Colors.grey,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           provider.state,

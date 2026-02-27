@@ -10,6 +10,7 @@ import '../../core/services/media_upload_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../models/health_record.dart';
 import '../../services/firestore_service.dart';
+import '../../widgets/app_illustration.dart';
 import '../../widgets/sync_status_action.dart';
 
 final _healthRecordsForCurrentUserProvider =
@@ -226,18 +227,24 @@ class _HealthRecordsScreenState extends ConsumerState<HealthRecordsScreen> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  image: const DecorationImage(
-                    image: AssetImage('assets/images/records_banner.jpg'),
-                    fit: BoxFit.cover,
+                  gradient: LinearGradient(
+                    colors: [
+                      AppTheme.primaryColor,
+                      AppTheme.primaryColor.withValues(alpha: 0.75),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Row(
                   children: [
-                    const Icon(
-                      Icons.folder_shared,
-                      color: Colors.white,
-                      size: 40,
+                    const SizedBox(
+                      width: 64,
+                      child: AppIllustration(
+                        asset: 'assets/illustrations/empty_records.svg',
+                        height: 56,
+                      ),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -279,10 +286,9 @@ class _HealthRecordsScreenState extends ConsumerState<HealthRecordsScreen> {
                 Center(
                   child: Column(
                     children: [
-                      Icon(
-                        Icons.folder_open,
-                        size: 64,
-                        color: Colors.grey[300],
+                      const AppIllustration(
+                        asset: 'assets/illustrations/empty_records.svg',
+                        height: 120,
                       ),
                       const SizedBox(height: 12),
                       Text(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
+import '../../widgets/app_illustration.dart';
 import '../../widgets/healthcare_hero_banner.dart';
 import '../../widgets/sync_status_action.dart';
 
@@ -213,7 +214,10 @@ class HomeScreen extends ConsumerWidget {
               ),
               child: Column(
                 children: [
-                  Icon(Icons.calendar_today, size: 40, color: Colors.grey[400]),
+                  const AppIllustration(
+                    asset: 'assets/illustrations/empty_appointments.svg',
+                    height: 84,
+                  ),
                   const SizedBox(height: 8),
                   Text(
                     'No upcoming appointments',
@@ -256,7 +260,10 @@ class HomeScreen extends ConsumerWidget {
               ),
               child: Column(
                 children: [
-                  Icon(Icons.history, size: 40, color: Colors.grey[400]),
+                  const AppIllustration(
+                    asset: 'assets/illustrations/empty_symptoms.svg',
+                    height: 84,
+                  ),
                   const SizedBox(height: 8),
                   Text(
                     'No recent checks',

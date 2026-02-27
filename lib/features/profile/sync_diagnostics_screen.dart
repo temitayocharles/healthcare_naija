@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers/providers.dart';
+import '../../widgets/app_illustration.dart';
 
 class SyncDiagnosticsScreen extends ConsumerWidget {
   const SyncDiagnosticsScreen({super.key});
@@ -32,6 +33,11 @@ class SyncDiagnosticsScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          const AppIllustration(
+            asset: 'assets/illustrations/offline_sync.svg',
+            height: 110,
+          ),
+          const SizedBox(height: 12),
           _MetricTile(
             title: 'Pending operations',
             value: pending.when(
@@ -63,10 +69,7 @@ class SyncDiagnosticsScreen extends ConsumerWidget {
 }
 
 class _MetricTile extends StatelessWidget {
-  const _MetricTile({
-    required this.title,
-    required this.value,
-  });
+  const _MetricTile({required this.title, required this.value});
 
   final String title;
   final String value;
@@ -76,10 +79,7 @@ class _MetricTile extends StatelessWidget {
     return Card(
       child: ListTile(
         title: Text(title),
-        trailing: Text(
-          value,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
+        trailing: Text(value, style: Theme.of(context).textTheme.titleMedium),
       ),
     );
   }

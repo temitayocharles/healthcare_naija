@@ -7,6 +7,7 @@ import '../../core/providers/providers.dart';
 import '../../core/services/media_upload_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../services/firestore_service.dart';
+import '../../widgets/app_illustration.dart';
 import '../../widgets/healthcare_hero_banner.dart';
 import '../../widgets/sync_status_action.dart';
 
@@ -207,7 +208,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.forum_outlined, size: 72),
+                        const AppIllustration(
+                          asset: 'assets/illustrations/empty_chat.svg',
+                          height: 110,
+                        ),
                         const SizedBox(height: 12),
                         const Text('No messages yet. Start the conversation.'),
                       ],

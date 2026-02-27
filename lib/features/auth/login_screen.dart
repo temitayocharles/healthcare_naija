@@ -7,6 +7,7 @@ import '../../core/providers/providers.dart';
 import '../../core/result/app_result.dart';
 import '../../core/theme/app_theme.dart';
 import '../../models/user.dart';
+import '../../widgets/app_illustration.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -44,10 +45,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     try {
       if (_isLogin) {
-        final result = await ref.read(authRepositoryProvider).signInWithEmail(
-          email: _emailController.text.trim(),
-          password: _passwordController.text,
-        );
+        final result = await ref
+            .read(authRepositoryProvider)
+            .signInWithEmail(
+              email: _emailController.text.trim(),
+              password: _passwordController.text,
+            );
 
         if (result is AppSuccess<User>) {
           await ref.read(currentUserProvider.notifier).setUser(result.data);
@@ -58,12 +61,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           _showError(result.message);
         }
       } else {
-        final result = await ref.read(authRepositoryProvider).registerWithEmail(
-          email: _emailController.text.trim(),
-          password: _passwordController.text,
-          name: _nameController.text.trim(),
-          phone: _phoneController.text.trim(),
-        );
+        final result = await ref
+            .read(authRepositoryProvider)
+            .registerWithEmail(
+              email: _emailController.text.trim(),
+              password: _passwordController.text,
+              name: _nameController.text.trim(),
+              phone: _phoneController.text.trim(),
+            );
 
         if (result is AppSuccess<User>) {
           final user = result.data.copyWith(role: _selectedRole);
@@ -103,9 +108,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -120,27 +125,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 40),
-                Icon(
-                  Icons.local_hospital,
-                  size: 80,
-                  color: AppTheme.primaryColor,
+                const AppIllustration(
+                  asset: 'assets/illustrations/hero_care_network.svg',
+                  height: 120,
                 ),
                 const SizedBox(height: 16),
                 Text(
                   'Nigeria Health Care',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.primaryColor,
-                      ),
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.primaryColor,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Your health, our priority',
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.grey[600],
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
                 ),
                 const SizedBox(height: 48),
                 Container(
@@ -157,15 +161,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             decoration: BoxDecoration(
-                              color: _isLogin ? Colors.white : Colors.transparent,
+                              color: _isLogin
+                                  ? Colors.white
+                                  : Colors.transparent,
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Text(
                               'Login',
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                fontWeight: _isLogin ? FontWeight.bold : FontWeight.normal,
-                                color: _isLogin ? AppTheme.primaryColor : Colors.grey,
+                                fontWeight: _isLogin
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                                color: _isLogin
+                                    ? AppTheme.primaryColor
+                                    : Colors.grey,
                               ),
                             ),
                           ),
@@ -177,15 +187,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             decoration: BoxDecoration(
-                              color: !_isLogin ? Colors.white : Colors.transparent,
+                              color: !_isLogin
+                                  ? Colors.white
+                                  : Colors.transparent,
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Text(
                               'Register',
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                fontWeight: !_isLogin ? FontWeight.bold : FontWeight.normal,
-                                color: !_isLogin ? AppTheme.primaryColor : Colors.grey,
+                                fontWeight: !_isLogin
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                                color: !_isLogin
+                                    ? AppTheme.primaryColor
+                                    : Colors.grey,
                               ),
                             ),
                           ),
@@ -203,7 +219,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       prefixIcon: Icon(Icons.person_outline),
                     ),
                     validator: (value) {
-                      if (!_isLogin && (value == null || value.trim().isEmpty)) {
+                      if (!_isLogin &&
+                          (value == null || value.trim().isEmpty)) {
                         return 'Please enter your name';
                       }
                       return null;
